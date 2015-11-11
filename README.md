@@ -51,18 +51,6 @@ println(guid.String())
 // Output: TYjhW2D0huQoQS3J
 ```
 
-Store an `xid` into a `net/context`:
-
-```go
-ctx = xid.NewContext(ctx, guid)
-```
-
-Retrieve an `xid` from a `net/context` if any:
-
-```go
-guid, ok := xid.FromContext(ctx)
-```
-
 Get `xid` embedded info:
 
 ```go
