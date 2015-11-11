@@ -41,7 +41,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"sync/atomic"
 	"time"
@@ -62,16 +61,8 @@ var ErrInvalidID = errors.New("invalid ID")
 
 // objectIDCounter is atomically incremented when generating a new ObjectId
 // using NewObjectId() function. It's used as a counter part of an id.
-var objectIDCounter uint32
-
-// init objectIDCounter to be a random initial value.
-func init() {
-	b := make([]byte, 3)
-	if _, e := io.ReadFull(rand.Reader, b); e != nil {
-		panic(e)
-	}
-	objectIDCounter = uint32(b[0])<<16 | uint32(b[1])<<8 | uint32(b[2])
-}
+// This id is initialized with a random value.
+var objectIDCounter = randInt()
 
 // machineId stores machine id generated once and used in subsequent calls
 // to NewObjectId function.
@@ -82,19 +73,26 @@ var machineID = readMachineID()
 // a runtime error.
 func readMachineID() []byte {
 	id := make([]byte, 3)
-	hostname, err1 := os.Hostname()
-	if err1 != nil {
+	if hostname, err := os.Hostname(); err == nil {
+		hw := md5.New()
+		hw.Write([]byte(hostname))
+		copy(id, hw.Sum(nil))
+	} else {
 		// Fallback to rand number if machine id can't be gathered
-		_, err2 := io.ReadFull(rand.Reader, id)
-		if err2 != nil {
-			panic(fmt.Errorf("cannot get hostname: %v; %v", err1, err2))
+		if _, randErr := rand.Reader.Read(id); randErr != nil {
+			panic(fmt.Errorf("Cannot get hostname nor generate a random number: %v; %v", err, randErr))
 		}
-		return id
 	}
-	hw := md5.New()
-	hw.Write([]byte(hostname))
-	copy(id, hw.Sum(nil))
 	return id
+}
+
+// randInt generates a random uint32
+func randInt() uint32 {
+	b := make([]byte, 3)
+	if _, err := rand.Reader.Read(b); err != nil {
+		panic(fmt.Errorf("Cannot generate random number: %v;", err))
+	}
+	return uint32(b[0])<<16 | uint32(b[1])<<8 | uint32(b[2])
 }
 
 // New generates a globaly unique ID
