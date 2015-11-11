@@ -16,18 +16,20 @@ The binary representation of the id is compatible with Mongo 12 bytes Object IDs
 The string representation is using URL safe base64 for better space efficiency when
 stored in that form (16 bytes).
 
-UUID is 16 bytes (128 bits), snowflake is 8 bytes (64 bits), xid stands in between
-with 12 bytes with a more compact string representation ready for the web and no
-required configuration or central generation server.
+UUIDs are 16 bytes (128 bits) and 36 chars as string representation. Twitter Snowflake
+ids are 8 bytes (64 bits) but require machine/data-center configuration and/or central
+generator servers. xid stands in between with 12 bytes (96 bits) and a more compact
+URL-safe string representation (16 chars). No configuration or central generator server
+is required so it can be used directly in server's code.
 
 Features:
 
 - Size: 12 bytes (96 bits), smaller than UUID, larger than snowflake
-- Base64 URL safe encoded by default (16 bytes storage when transported as printable string)
+- Base64 URL safe encoded by default (16 chars when transported as printable string)
 - Non configured, you don't need set a unique machine and/or data center id
 - K-ordered
 - Embedded time with 1 second precision
-- Unicity guaranted for 16,777,216 (24 bits) unique ids per second and per host/process
+- Unicity guaranteed for 16,777,216 (24 bits) unique ids per second and per host/process
 
 Best used with [xlog](https://github.com/rs/xlog)'s
 [RequestIDHandler](https://godoc.org/github.com/rs/xlog#RequestIDHandler).
