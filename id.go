@@ -64,6 +64,15 @@ var ErrInvalidID = errors.New("invalid ID")
 // using NewObjectId() function. It's used as a counter part of an id.
 var objectIDCounter uint32
 
+// init objectIDCounter to be a random initial value.
+func init() {
+	b := make([]byte, 3)
+	if _, e := io.ReadFull(rand.Reader, b); e != nil {
+		panic(e)
+	}
+	objectIDCounter = uint32(b[0])<<16 | uint32(b[1])<<8 | uint32(b[2])
+}
+
 // machineId stores machine id generated once and used in subsequent calls
 // to NewObjectId function.
 var machineID = readMachineID()
