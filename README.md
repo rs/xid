@@ -25,6 +25,7 @@ is required so it can be used directly in server's code.
 | Name      | Binary Size | String Size    | Features
 |-----------|-------------|----------------|----------------
 | UUIDs     | 16 bytes    | 36 chars       | configuration free, not sortable
+| shortuuid | 16 bytes    | 22 chars       | configuration free, not sortable
 | Snowflake | 8 bytes     | up to 20 chars | needs machin/DC configuration, needs central server, sortable
 | MongoID   | 12 bytes    | 24 chars       | configuration free, sortable
 | xid       | 12 bytes    | 16 chars       | configuration free, sortable
