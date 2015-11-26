@@ -2,9 +2,9 @@
 
 [![godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/rs/xid) [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/rs/xid/master/LICENSE) [![Build Status](https://travis-ci.org/rs/xid.svg?branch=master)](https://travis-ci.org/rs/xid) [![Coverage](http://gocover.io/_badge/github.com/rs/xid)](http://gocover.io/github.com/rs/xid)
 
-Package xid is a globally unique id generator.
+Package xid is a globally unique id generator library, ready to be used safely directly in your server code.
 
-Xid is using Mongo Object ID algorithm to generate globally unique ids:
+Xid is using Mongo Object ID algorithm to generate globally unique ids with a different serialization (bast64) to make it shorter when transported as a string:
 https://docs.mongodb.org/manual/reference/object-id/
 
 - 4-byte value representing the seconds since the Unix epoch,
@@ -21,6 +21,13 @@ ids are 8 bytes (64 bits) but require machine/data-center configuration and/or c
 generator servers. xid stands in between with 12 bytes (96 bits) and a more compact
 URL-safe string representation (16 chars). No configuration or central generator server
 is required so it can be used directly in server's code.
+
+| Name      | Binary Size | String Size    | Features
+|-----------|-------------|----------------|----------------
+| UUIDs     | 16 bytes    | 36 chars       | configuration free, not sortable
+| Snowflake | 8 bytes     | up to 20 chars | needs machin/DC configuration, needs central server, sortable
+| MongoID   | 12 bytes    | 24 chars       | configuration free, sortable
+| xid       | 12 bytes    | 16 chars       | configuration free, sortable
 
 Features:
 
