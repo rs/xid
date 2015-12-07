@@ -79,7 +79,7 @@ func TestNew(t *testing.T) {
 
 func TestIDString(t *testing.T) {
 	id := ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}
-	assert.Equal(t, "TYjhW2D0huQoQS3J", id.String())
+	assert.Equal(t, "9M4E2MR0UI3E8A215N4G", id.String())
 }
 
 type jsonType struct {
@@ -91,11 +91,11 @@ func TestIDJSONMarshaling(t *testing.T) {
 	v := jsonType{ID: &id}
 	data, err := json.Marshal(&v)
 	assert.NoError(t, err)
-	assert.Equal(t, `{"ID":"TYjhW2D0huQoQS3J"}`, string(data))
+	assert.Equal(t, `{"ID":"9M4E2MR0UI3E8A215N4G"}`, string(data))
 }
 
 func TestIDJSONUnmarshaling(t *testing.T) {
-	data := []byte(`{"ID":"TYjhW2D0huQoQS3J"}`)
+	data := []byte(`{"ID":"9M4E2MR0UI3E8A215N4G"}`)
 	v := jsonType{}
 	err := json.Unmarshal(data, &v)
 	assert.NoError(t, err)

@@ -9,8 +9,9 @@
 //   - 3-byte counter, starting with a random value.
 //
 // The binary representation of the id is compatible with Mongo 12 bytes Object IDs.
-// The string representation is using URL safe base64 for better space efficiency when
-// stored in that form (16 bytes).
+// The string representation is using base32 hex (w/o padding) for better space efficiency
+// when stored in that form (20 bytes). The hex variant of base32 is used to retain the
+// sortable property of the id.
 //
 // UUID is 16 bytes (128 bits), snowflake is 8 bytes (64 bits), xid stands in between
 // with 12 bytes with a more compact string representation ready for the web and no
@@ -19,11 +20,11 @@
 // Features:
 //
 //   - Size: 12 bytes (96 bits), smaller than UUID, larger than snowflake
-//   - Base64 URL safe encoded by default (16 bytes storage when transported as printable string)
+//   - Base32 hex encoded by default (16 bytes storage when transported as printable string)
 //   - Non configured, you don't need set a unique machine and/or data center id
 //   - K-ordered
 //   - Embedded time with 1 second precision
-//   - Unicity guaranted for 16,777,216 (24 bits) unique ids per second and per host/process
+//   - Unicity guaranted for 16,777,216 (20 bits) unique ids per second and per host/process
 //
 // Best used with xlog's RequestIDHandler (https://godoc.org/github.com/rs/xlog#RequestIDHandler).
 //
@@ -37,7 +38,7 @@ package xid
 import (
 	"crypto/md5"
 	"crypto/rand"
-	"encoding/base64"
+	"encoding/base32"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -52,8 +53,10 @@ import (
 type ID [rawLen]byte
 
 const (
-	encodedLen = 16
-	rawLen     = 12
+	trimLen    = 20 // len after padding removal
+	encodedLen = 24 // len after base32 encoding, with padding
+	decodedLen = 15 // len after base32 decoding with the padded data
+	rawLen     = 12 // binary raw len
 )
 
 // ErrInvalidID is returned when trying to unmarshal an invalid ID
@@ -116,27 +119,33 @@ func New() ID {
 	return id
 }
 
-// String returns a base64 URL safe representation of the id
+// String returns a base32 hex with no padding representation of the id (char set is 0-9, a-v).
 func (id ID) String() string {
-	return base64.URLEncoding.EncodeToString(id[:])
+	text, _ := id.MarshalText()
+	return string(text)
 }
 
 // MarshalText implements encoding/text TextMarshaler interface
-func (id ID) MarshalText() (text []byte, err error) {
-	text = make([]byte, encodedLen)
-	base64.URLEncoding.Encode(text, id[:])
-	return
+func (id ID) MarshalText() ([]byte, error) {
+	text := make([]byte, encodedLen)
+	base32.HexEncoding.Encode(text, id[:])
+	return text[:trimLen], nil
 }
 
 // UnmarshalText implements encoding/text TextUnmarshaler interface
 func (id *ID) UnmarshalText(text []byte) error {
-	if len(text) != encodedLen {
+	if len(text) != trimLen {
 		return ErrInvalidID
 	}
-	b := make([]byte, rawLen)
-	_, err := base64.URLEncoding.Decode(b, text)
+	b := make([]byte, decodedLen)
+	_, err := base32.HexEncoding.Decode(b, append(text, '=', '=', '=', '='))
 	for i, c := range b {
 		id[i] = c
+		// The decoded len is larger than the actual len because of padding.
+		// Stop copying data when we reach raw len.
+		if i+1 == rawLen {
+			break
+		}
 	}
 	return err
 }

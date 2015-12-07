@@ -13,13 +13,19 @@ https://docs.mongodb.org/manual/reference/object-id/
 - 3-byte counter, starting with a random value.
 
 The binary representation of the id is compatible with Mongo 12 bytes Object IDs.
-The string representation is using URL safe base64 for better space efficiency when
-stored in that form (16 bytes).
+The string representation is using base32 hex (w/o padding) for better space efficiency
+when stored in that form (20 bytes). The hex variant of base32 is used to retain the
+sortable property of the id.
+
+Xid doesn't use base64 because case sensitivity and the 2 non alphanum chars may be an
+issue when transported as a string between various systems. Base36 wasn't retained either
+because 1/ it's not standard 2/ the resulting size is not predictable (not bit aligned)
+and 3/ it would not remain sortable.
 
 UUIDs are 16 bytes (128 bits) and 36 chars as string representation. Twitter Snowflake
 ids are 8 bytes (64 bits) but require machine/data-center configuration and/or central
 generator servers. xid stands in between with 12 bytes (96 bits) and a more compact
-URL-safe string representation (16 chars). No configuration or central generator server
+URL-safe string representation (20 chars). No configuration or central generator server
 is required so it can be used directly in server's code.
 
 | Name        | Binary Size | String Size    | Features
@@ -28,17 +34,17 @@ is required so it can be used directly in server's code.
 | [shortuuid] | 16 bytes    | 22 chars       | configuration free, not sortable
 | [Snowflake] | 8 bytes     | up to 20 chars | needs machin/DC configuration, needs central server, sortable
 | [MongoID]   | 12 bytes    | 24 chars       | configuration free, sortable
-| xid         | 12 bytes    | 16 chars       | configuration free, sortable
+| xid         | 12 bytes    | 20 chars       | configuration free, sortable
 
 [UUID]: https://en.wikipedia.org/wiki/Universally_unique_identifier
-[shortuuid]: https://github.com/stochastic-technologies/shortuuid 
+[shortuuid]: https://github.com/stochastic-technologies/shortuuid
 [Snowflake]: https://blog.twitter.com/2010/announcing-snowflake
 [MongoID]: https://docs.mongodb.org/manual/reference/object-id/
 
 Features:
 
 - Size: 12 bytes (96 bits), smaller than UUID, larger than snowflake
-- Base64 URL safe encoded by default (16 chars when transported as printable string)
+- Base32 hex encoded by default (20 chars when transported as printable string, still sortable)
 - Non configured, you don't need set a unique machine and/or data center id
 - K-ordered
 - Embedded time with 1 second precision
