@@ -20,7 +20,8 @@ sortable property of the id.
 Xid doesn't use base64 because case sensitivity and the 2 non alphanum chars may be an
 issue when transported as a string between various systems. Base36 wasn't retained either
 because 1/ it's not standard 2/ the resulting size is not predictable (not bit aligned)
-and 3/ it would not remain sortable.
+and 3/ it would not remain sortable. To validate a base32 `xid`, expect a 20 chars long,
+all lowercase sequence of `a` to `v` letters and `0` to `9` numbers (`[0-9a-v]{20}`).
 
 UUIDs are 16 bytes (128 bits) and 36 chars as string representation. Twitter Snowflake
 ids are 8 bytes (64 bits) but require machine/data-center configuration and/or central
