@@ -42,6 +42,7 @@
 package xid
 
 import (
+	"bytes"
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/base32"
@@ -125,7 +126,7 @@ func New() ID {
 	return id
 }
 
-// String returns a base32 hex with no padding representation of the id (char set is 0-9, a-v).
+// String returns a base32 hex lowercased with no padding representation of the id (char set is 0-9, a-v).
 func (id ID) String() string {
 	text, _ := id.MarshalText()
 	return string(text)
@@ -135,7 +136,7 @@ func (id ID) String() string {
 func (id ID) MarshalText() ([]byte, error) {
 	text := make([]byte, encodedLen)
 	base32.HexEncoding.Encode(text, id[:])
-	return text[:trimLen], nil
+	return bytes.ToLower(text[:trimLen]), nil
 }
 
 // UnmarshalText implements encoding/text TextUnmarshaler interface
@@ -143,8 +144,13 @@ func (id *ID) UnmarshalText(text []byte) error {
 	if len(text) != trimLen {
 		return ErrInvalidID
 	}
+	for _, c := range text {
+		if !(c >= '0' && c <= '9') && !(c >= 'a' && c <= 'v') {
+			return ErrInvalidID
+		}
+	}
 	b := make([]byte, decodedLen)
-	_, err := base32.HexEncoding.Decode(b, append(text, '=', '=', '=', '='))
+	_, err := base32.HexEncoding.Decode(b, append(bytes.ToUpper(text), '=', '=', '=', '='))
 	for i, c := range b {
 		id[i] = c
 		// The decoded len is larger than the actual len because of padding.

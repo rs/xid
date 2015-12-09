@@ -79,7 +79,7 @@ func TestNew(t *testing.T) {
 
 func TestIDString(t *testing.T) {
 	id := ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}
-	assert.Equal(t, "9M4E2MR0UI3E8A215N4G", id.String())
+	assert.Equal(t, "9m4e2mr0ui3e8a215n4g", id.String())
 }
 
 type jsonType struct {
@@ -91,11 +91,11 @@ func TestIDJSONMarshaling(t *testing.T) {
 	v := jsonType{ID: &id}
 	data, err := json.Marshal(&v)
 	assert.NoError(t, err)
-	assert.Equal(t, `{"ID":"9M4E2MR0UI3E8A215N4G"}`, string(data))
+	assert.Equal(t, `{"ID":"9m4e2mr0ui3e8a215n4g"}`, string(data))
 }
 
 func TestIDJSONUnmarshaling(t *testing.T) {
-	data := []byte(`{"ID":"9M4E2MR0UI3E8A215N4G"}`)
+	data := []byte(`{"ID":"9m4e2mr0ui3e8a215n4g"}`)
 	v := jsonType{}
 	err := json.Unmarshal(data, &v)
 	assert.NoError(t, err)
@@ -104,7 +104,9 @@ func TestIDJSONUnmarshaling(t *testing.T) {
 
 func TestIDJSONUnmarshalingError(t *testing.T) {
 	v := jsonType{}
-	err := json.Unmarshal([]byte(`{"ID":"TYjhW2D0huQoQS"}`), &v)
+	err := json.Unmarshal([]byte(`{"ID":"9M4E2MR0UI3E8A215N4G"}`), &v)
+	assert.EqualError(t, err, "invalid ID")
+	err = json.Unmarshal([]byte(`{"ID":"TYjhW2D0huQoQS"}`), &v)
 	assert.EqualError(t, err, "invalid ID")
 	err = json.Unmarshal([]byte(`{"ID":"TYjhW2D0huQoQS3kdk"}`), &v)
 	assert.EqualError(t, err, "invalid ID")
