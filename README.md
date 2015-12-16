@@ -70,7 +70,7 @@ References:
 guid := xid.New()
 
 println(guid.String())
-// Output: TYjhW2D0huQoQS3J
+// Output: 9m4e2mr0ui3e8a215n4g
 ```
 
 Get `xid` embedded info:
