@@ -126,6 +126,13 @@ func New() ID {
 	return id
 }
 
+// FromString reads an ID from its string representation
+func FromString(id string) (ID, error) {
+	i := &ID{}
+	err := i.UnmarshalText([]byte(id))
+	return *i, err
+}
+
 // String returns a base32 hex lowercased with no padding representation of the id (char set is 0-9, a-v).
 func (id ID) String() string {
 	text, _ := id.MarshalText()

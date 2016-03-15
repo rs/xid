@@ -82,6 +82,18 @@ func TestIDString(t *testing.T) {
 	assert.Equal(t, "9m4e2mr0ui3e8a215n4g", id.String())
 }
 
+func TestFromString(t *testing.T) {
+	id, err := FromString("9m4e2mr0ui3e8a215n4g")
+	assert.NoError(t, err)
+	assert.Equal(t, ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}, id)
+}
+
+func TestFromStringInvalid(t *testing.T) {
+	id, err := FromString("invalid")
+	assert.EqualError(t, err, "invalid ID")
+	assert.Equal(t, ID{}, id)
+}
+
 type jsonType struct {
 	ID *ID
 }
