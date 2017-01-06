@@ -78,6 +78,8 @@ var objectIDCounter = randInt()
 // to NewObjectId function.
 var machineID = readMachineID()
 
+var pid = os.Getpid()
+
 // readMachineId generates machine id and puts it into the machineId global
 // variable. If this function fails to get the hostname, it will cause
 // a runtime error.
@@ -115,7 +117,6 @@ func New() ID {
 	id[5] = machineID[1]
 	id[6] = machineID[2]
 	// Pid, 2 bytes, specs don't specify endianness, but we use big endian.
-	pid := os.Getpid()
 	id[7] = byte(pid >> 8)
 	id[8] = byte(pid)
 	// Increment, 3 bytes, big endian
