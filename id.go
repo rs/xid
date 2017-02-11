@@ -30,7 +30,7 @@
 //   - Non configured, you don't need set a unique machine and/or data center id
 //   - K-ordered
 //   - Embedded time with 1 second precision
-//   - Unicity guaranted for 16,777,216 (20 bits) unique ids per second and per host/process
+//   - Unicity guaranted for 16,777,216 (24 bits) unique ids per second and per host/process
 //
 // Best used with xlog's RequestIDHandler (https://godoc.org/github.com/rs/xlog#RequestIDHandler).
 //
@@ -67,7 +67,7 @@ const (
 )
 
 // ErrInvalidID is returned when trying to unmarshal an invalid ID
-var ErrInvalidID = errors.New("invalid ID")
+var ErrInvalidID = errors.New("xid: invalid ID")
 
 // objectIDCounter is atomically incremented when generating a new ObjectId
 // using NewObjectId() function. It's used as a counter part of an id.
@@ -92,7 +92,7 @@ func readMachineID() []byte {
 	} else {
 		// Fallback to rand number if machine id can't be gathered
 		if _, randErr := rand.Reader.Read(id); randErr != nil {
-			panic(fmt.Errorf("Cannot get hostname nor generate a random number: %v; %v", err, randErr))
+			panic(fmt.Errorf("xid: cannot get hostname nor generate a random number: %v; %v", err, randErr))
 		}
 	}
 	return id
@@ -102,7 +102,7 @@ func readMachineID() []byte {
 func randInt() uint32 {
 	b := make([]byte, 3)
 	if _, err := rand.Reader.Read(b); err != nil {
-		panic(fmt.Errorf("Cannot generate random number: %v;", err))
+		panic(fmt.Errorf("xid: cannot generate random number: %v;", err))
 	}
 	return uint32(b[0])<<16 | uint32(b[1])<<8 | uint32(b[2])
 }
