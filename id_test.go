@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const strInvalidID = "xid: invalid ID"
+
 type IDParts struct {
 	id        ID
 	timestamp int64
@@ -90,7 +92,7 @@ func TestFromString(t *testing.T) {
 
 func TestFromStringInvalid(t *testing.T) {
 	id, err := FromString("invalid")
-	assert.EqualError(t, err, "invalid ID")
+	assert.EqualError(t, err, strInvalidID)
 	assert.Equal(t, ID{}, id)
 }
 
@@ -117,11 +119,11 @@ func TestIDJSONUnmarshaling(t *testing.T) {
 func TestIDJSONUnmarshalingError(t *testing.T) {
 	v := jsonType{}
 	err := json.Unmarshal([]byte(`{"ID":"9M4E2MR0UI3E8A215N4G"}`), &v)
-	assert.EqualError(t, err, "invalid ID")
+	assert.EqualError(t, err, strInvalidID)
 	err = json.Unmarshal([]byte(`{"ID":"TYjhW2D0huQoQS"}`), &v)
-	assert.EqualError(t, err, "invalid ID")
+	assert.EqualError(t, err, strInvalidID)
 	err = json.Unmarshal([]byte(`{"ID":"TYjhW2D0huQoQS3kdk"}`), &v)
-	assert.EqualError(t, err, "invalid ID")
+	assert.EqualError(t, err, strInvalidID)
 }
 
 func BenchmarkNew(b *testing.B) {
