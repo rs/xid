@@ -42,7 +42,6 @@
 package xid
 
 import (
-	"bytes"
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/base32"
@@ -78,7 +77,12 @@ var objectIDCounter = randInt()
 // to NewObjectId function.
 var machineID = readMachineID()
 
+// pid stores the current process id
 var pid = os.Getpid()
+
+// b32enc stores a custom version of the base32 encoding with lower case
+// letters.
+var b32enc = base32.NewEncoding("0123456789abcdefghijklmnopqrstuv")
 
 // readMachineId generates machine id and puts it into the machineId global
 // variable. If this function fails to get the hostname, it will cause
@@ -143,8 +147,8 @@ func (id ID) String() string {
 // MarshalText implements encoding/text TextMarshaler interface
 func (id ID) MarshalText() ([]byte, error) {
 	text := make([]byte, encodedLen)
-	base32.HexEncoding.Encode(text, id[:])
-	return bytes.ToLower(text[:trimLen]), nil
+	b32enc.Encode(text, id[:])
+	return text[:trimLen], nil
 }
 
 // UnmarshalText implements encoding/text TextUnmarshaler interface
@@ -158,7 +162,7 @@ func (id *ID) UnmarshalText(text []byte) error {
 		}
 	}
 	b := make([]byte, decodedLen)
-	_, err := base32.HexEncoding.Decode(b, append(bytes.ToUpper(text), '=', '=', '=', '='))
+	_, err := b32enc.Decode(b, append(text, '=', '=', '=', '='))
 	for i, c := range b {
 		id[i] = c
 		// The decoded len is larger than the actual len because of padding.
