@@ -127,13 +127,33 @@ func TestIDJSONUnmarshalingError(t *testing.T) {
 }
 
 func BenchmarkNew(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_ = New()
-	}
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_ = New()
+		}
+	})
 }
 
 func BenchmarkNewString(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		_ = New().String()
-	}
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_ = New().String()
+		}
+	})
 }
+
+// func BenchmarkUUIDv1(b *testing.B) {
+// 	b.RunParallel(func(pb *testing.PB) {
+// 		for pb.Next() {
+// 			_ = uuid.NewV1().String()
+// 		}
+// 	})
+// }
+
+// func BenchmarkUUIDv4(b *testing.B) {
+// 	b.RunParallel(func(pb *testing.PB) {
+// 		for pb.Next() {
+// 			_ = uuid.NewV4().String()
+// 		}
+// 	})
+// }
