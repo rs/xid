@@ -83,6 +83,16 @@ guid.Time()
 guid.Counter()
 ```
 
+## Benchmark
+
+Benchmark against Go [Maxim Bublis](https://github.com/satori)'s [UUID](https://github.com/satori/go.uuid).
+
+```
+BenchmarkXID-8        10000000         139 ns/op        64 B/op         2 allocs/op
+BenchmarkUUIDv1-8     10000000         207 ns/op        48 B/op         1 allocs/op
+BenchmarkUUIDv4-8      1000000        1500 ns/op        64 B/op         2 allocs/op
+```
+
 ## Licenses
 
 All source code is licensed under the [MIT License](https://raw.github.com/rs/xid/master/LICENSE).

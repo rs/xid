@@ -1,4 +1,4 @@
-package xid_test
+package bench
 
 import (
 	"testing"
