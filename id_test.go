@@ -125,3 +125,15 @@ func TestIDJSONUnmarshalingError(t *testing.T) {
 	err = json.Unmarshal([]byte(`{"ID":"TYjhW2D0huQoQS3kdk"}`), &v)
 	assert.EqualError(t, err, strInvalidID)
 }
+
+func BenchmarkNew(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = New()
+	}
+}
+
+func BenchmarkNewString(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_ = New().String()
+	}
+}
