@@ -9,6 +9,7 @@ import (
 )
 
 const strInvalidID = "xid: invalid ID"
+const strScanError = "xid: scanning unsupported type"
 
 type IDParts struct {
 	id        ID
@@ -124,6 +125,26 @@ func TestIDJSONUnmarshalingError(t *testing.T) {
 	assert.EqualError(t, err, strInvalidID)
 	err = json.Unmarshal([]byte(`{"ID":"TYjhW2D0huQoQS3kdk"}`), &v)
 	assert.EqualError(t, err, strInvalidID)
+}
+
+func TestIDDriverValue(t *testing.T) {
+	id := ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}
+	data, err := id.Value()
+	assert.NoError(t, err)
+	assert.Equal(t, "9m4e2mr0ui3e8a215n4g", data)
+}
+
+func TestIDDriverScan(t *testing.T) {
+	id := ID{}
+	err := id.Scan("9m4e2mr0ui3e8a215n4g")
+	assert.NoError(t, err)
+	assert.Equal(t, ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}, id)
+}
+
+func TestIDDriverScanError(t *testing.T) {
+	id := ID{}
+	err := id.Scan(0)
+	assert.EqualError(t, err, strScanError)
 }
 
 func BenchmarkNew(b *testing.B) {
