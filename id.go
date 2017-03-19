@@ -213,9 +213,8 @@ func (id ID) Value() (driver.Value, error) {
 func (id *ID) Scan(value interface{}) (err error) {
 	switch val := value.(type) {
 	case string:
-		*id, err = FromString(val)
-		return
+		return id.UnmarshalText([]byte(val))
 	default:
-		return errors.New("xid: scanning unsupported type")
+		return fmt.Errorf("xid: scanning unsupported type: %T", value)
 	}
 }
