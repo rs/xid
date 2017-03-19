@@ -9,7 +9,6 @@ import (
 )
 
 const strInvalidID = "xid: invalid ID"
-const strScanError = "xid: scanning unsupported type"
 
 type IDParts struct {
 	id        ID
@@ -144,7 +143,9 @@ func TestIDDriverScan(t *testing.T) {
 func TestIDDriverScanError(t *testing.T) {
 	id := ID{}
 	err := id.Scan(0)
-	assert.EqualError(t, err, strScanError)
+	assert.EqualError(t, err, "xid: scanning unsupported type: int")
+	err = id.Scan("0")
+	assert.EqualError(t, err, strInvalidID)
 }
 
 func BenchmarkNew(b *testing.B) {
