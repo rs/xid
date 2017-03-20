@@ -44,6 +44,7 @@ package xid
 import (
 	"crypto/md5"
 	"crypto/rand"
+	"database/sql/driver"
 	"encoding/base32"
 	"encoding/binary"
 	"errors"
@@ -200,4 +201,20 @@ func (id ID) Counter() int32 {
 	b := id[9:12]
 	// Counter is stored as big-endian 3-byte value
 	return int32(uint32(b[0])<<16 | uint32(b[1])<<8 | uint32(b[2]))
+}
+
+// Value implements the driver.Valuer interface.
+func (id ID) Value() (driver.Value, error) {
+	b, err := id.MarshalText()
+	return string(b), err
+}
+
+// Scan implements the sql.Scanner interface.
+func (id *ID) Scan(value interface{}) (err error) {
+	switch val := value.(type) {
+	case string:
+		return id.UnmarshalText([]byte(val))
+	default:
+		return fmt.Errorf("xid: scanning unsupported type: %T", value)
+	}
 }
