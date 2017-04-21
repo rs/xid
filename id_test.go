@@ -97,19 +97,20 @@ func TestFromStringInvalid(t *testing.T) {
 }
 
 type jsonType struct {
-	ID *ID
+	ID  *ID
+	Str string
 }
 
 func TestIDJSONMarshaling(t *testing.T) {
 	id := ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}
-	v := jsonType{ID: &id}
+	v := jsonType{ID: &id, Str: "test"}
 	data, err := json.Marshal(&v)
 	assert.NoError(t, err)
-	assert.Equal(t, `{"ID":"9m4e2mr0ui3e8a215n4g"}`, string(data))
+	assert.Equal(t, `{"ID":"9m4e2mr0ui3e8a215n4g","Str":"test"}`, string(data))
 }
 
 func TestIDJSONUnmarshaling(t *testing.T) {
-	data := []byte(`{"ID":"9m4e2mr0ui3e8a215n4g"}`)
+	data := []byte(`{"ID":"9m4e2mr0ui3e8a215n4g","Str":"test"}`)
 	v := jsonType{}
 	err := json.Unmarshal(data, &v)
 	assert.NoError(t, err)

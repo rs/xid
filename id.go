@@ -162,16 +162,13 @@ func (id *ID) UnmarshalText(text []byte) error {
 			return ErrInvalidID
 		}
 	}
-	b := make([]byte, decodedLen)
-	_, err := b32enc.Decode(b, append(text, '=', '=', '=', '='))
-	for i, c := range b {
-		id[i] = c
-		// The decoded len is larger than the actual len because of padding.
-		// Stop copying data when we reach raw len.
-		if i+1 == rawLen {
-			break
-		}
-	}
+	var (
+		bufe [trimLen + 4]byte
+		bufd [decodedLen]byte
+	)
+	copy(bufe[:], text)
+	_, err := b32enc.Decode(bufd[:], append(bufe[:trimLen], '=', '=', '=', '='))
+	copy(id[:], bufd[:])
 	return err
 }
 
