@@ -149,6 +149,14 @@ func TestIDDriverScanError(t *testing.T) {
 	assert.EqualError(t, err, strInvalidID)
 }
 
+func TestIDDriverScanByteFromDatabase(t *testing.T) {
+	id := ID{}
+	bs := []byte("9m4e2mr0ui3e8a215n4g")
+	err := id.Scan(bs)
+	assert.NoError(t, err)
+	assert.Equal(t, ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}, id)
+}
+
 func BenchmarkNew(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {

@@ -211,6 +211,8 @@ func (id *ID) Scan(value interface{}) (err error) {
 	switch val := value.(type) {
 	case string:
 		return id.UnmarshalText([]byte(val))
+	case []byte:
+		return id.UnmarshalText(val)
 	default:
 		return fmt.Errorf("xid: scanning unsupported type: %T", value)
 	}
