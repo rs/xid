@@ -60,11 +60,16 @@ import (
 type ID [rawLen]byte
 
 const (
-	trimLen    = 20 // len after padding removal
-	encodedLen = 24 // len after base32 encoding, with padding
+	encodedLen = 20 // string encoded len
 	decodedLen = 15 // len after base32 decoding with the padded data
 	rawLen     = 12 // binary raw len
+
+	// encoding stores a custom version of the base32 encoding with lower case
+	// letters.
+	encoding = "0123456789abcdefghijklmnopqrstuv"
 )
+
+var b32enc = base32.NewEncoding(encoding)
 
 // ErrInvalidID is returned when trying to unmarshal an invalid ID
 var ErrInvalidID = errors.New("xid: invalid ID")
@@ -80,10 +85,6 @@ var machineID = readMachineID()
 
 // pid stores the current process id
 var pid = os.Getpid()
-
-// b32enc stores a custom version of the base32 encoding with lower case
-// letters.
-var b32enc = base32.NewEncoding("0123456789abcdefghijklmnopqrstuv")
 
 // readMachineId generates machine id and puts it into the machineId global
 // variable. If this function fails to get the hostname, it will cause
@@ -141,19 +142,44 @@ func FromString(id string) (ID, error) {
 
 // String returns a base32 hex lowercased with no padding representation of the id (char set is 0-9, a-v).
 func (id ID) String() string {
-	return b32enc.EncodeToString(id[:])[:trimLen]
+	text := make([]byte, encodedLen)
+	encode(text, id[:])
+	return string(text)
 }
 
 // MarshalText implements encoding/text TextMarshaler interface
 func (id ID) MarshalText() ([]byte, error) {
 	text := make([]byte, encodedLen)
-	b32enc.Encode(text, id[:])
-	return text[:trimLen], nil
+	encode(text, id[:])
+	return text, nil
+}
+
+func encode(dst, id []byte) {
+	dst[0] = encoding[id[0]>>3]
+	dst[1] = encoding[(id[1]>>6)&0x1F|(id[0]<<2)&0x1F]
+	dst[2] = encoding[(id[1]>>1)&0x1F]
+	dst[3] = encoding[(id[2]>>4)&0x1F|(id[1]<<4)&0x1F]
+	dst[4] = encoding[id[3]>>7|(id[2]<<1)&0x1F]
+	dst[5] = encoding[(id[3]>>2)&0x1F]
+	dst[6] = encoding[id[4]>>5|(id[3]<<3)&0x1F]
+	dst[7] = encoding[id[4]&0x1F]
+	dst[8] = encoding[id[5]>>3]
+	dst[9] = encoding[(id[6]>>6)&0x1F|(id[5]<<2)&0x1F]
+	dst[10] = encoding[(id[6]>>1)&0x1F]
+	dst[11] = encoding[(id[7]>>4)&0x1F|(id[6]<<4)&0x1F]
+	dst[12] = encoding[id[8]>>7|(id[7]<<1)&0x1F]
+	dst[13] = encoding[(id[8]>>2)&0x1F]
+	dst[14] = encoding[(id[9]>>5)|(id[8]<<3)&0x1F]
+	dst[15] = encoding[id[9]&0x1F]
+	dst[16] = encoding[id[10]>>3]
+	dst[17] = encoding[(id[11]>>6)&0x1F|(id[10]<<2)&0x1F]
+	dst[18] = encoding[(id[11]>>1)&0x1F]
+	dst[19] = encoding[(id[11]<<4)&0x1F]
 }
 
 // UnmarshalText implements encoding/text TextUnmarshaler interface
 func (id *ID) UnmarshalText(text []byte) error {
-	if len(text) != trimLen {
+	if len(text) != encodedLen {
 		return ErrInvalidID
 	}
 	for _, c := range text {
@@ -162,11 +188,11 @@ func (id *ID) UnmarshalText(text []byte) error {
 		}
 	}
 	var (
-		bufe [trimLen + 4]byte
+		bufe [encodedLen + 4]byte
 		bufd [decodedLen]byte
 	)
 	copy(bufe[:], text)
-	_, err := b32enc.Decode(bufd[:], append(bufe[:trimLen], '=', '=', '=', '='))
+	_, err := b32enc.Decode(bufd[:], append(bufe[:encodedLen], '=', '=', '=', '='))
 	copy(id[:], bufd[:])
 	return err
 }
