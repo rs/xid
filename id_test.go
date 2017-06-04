@@ -173,6 +173,14 @@ func BenchmarkNewString(b *testing.B) {
 	})
 }
 
+func BenchmarkFromString(b *testing.B) {
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_, _ = FromString("9m4e2mr0ui3e8a215n4g")
+		}
+	})
+}
+
 // func BenchmarkUUIDv1(b *testing.B) {
 // 	b.RunParallel(func(pb *testing.PB) {
 // 		for pb.Next() {
