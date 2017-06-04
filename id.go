@@ -141,8 +141,7 @@ func FromString(id string) (ID, error) {
 
 // String returns a base32 hex lowercased with no padding representation of the id (char set is 0-9, a-v).
 func (id ID) String() string {
-	text, _ := id.MarshalText()
-	return string(text)
+	return b32enc.EncodeToString(id[:])[:trimLen]
 }
 
 // MarshalText implements encoding/text TextMarshaler interface
