@@ -45,7 +45,6 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"database/sql/driver"
-	"encoding/base32"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -69,8 +68,6 @@ const (
 	encoding = "0123456789abcdefghijklmnopqrstuv"
 )
 
-var b32enc = base32.NewEncoding(encoding)
-
 // ErrInvalidID is returned when trying to unmarshal an invalid ID
 var ErrInvalidID = errors.New("xid: invalid ID")
 
@@ -85,6 +82,18 @@ var machineID = readMachineID()
 
 // pid stores the current process id
 var pid = os.Getpid()
+
+// dec is the decoding map for base32 encoding
+var dec [256]byte
+
+func init() {
+	for i := 0; i < len(dec); i++ {
+		dec[i] = 0xFF
+	}
+	for i := 0; i < len(encoding); i++ {
+		dec[encoding[i]] = byte(i)
+	}
+}
 
 // readMachineId generates machine id and puts it into the machineId global
 // variable. If this function fails to get the hostname, it will cause
@@ -154,6 +163,7 @@ func (id ID) MarshalText() ([]byte, error) {
 	return text, nil
 }
 
+// encode by unrolling the stdlib base32 algorithm + removing all safe checks
 func encode(dst, id []byte) {
 	dst[0] = encoding[id[0]>>3]
 	dst[1] = encoding[(id[1]>>6)&0x1F|(id[0]<<2)&0x1F]
@@ -183,18 +193,28 @@ func (id *ID) UnmarshalText(text []byte) error {
 		return ErrInvalidID
 	}
 	for _, c := range text {
-		if !(c >= '0' && c <= '9') && !(c >= 'a' && c <= 'v') {
+		if dec[c] == 0xFF {
 			return ErrInvalidID
 		}
 	}
-	var (
-		bufe [encodedLen + 4]byte
-		bufd [decodedLen]byte
-	)
-	copy(bufe[:], text)
-	_, err := b32enc.Decode(bufd[:], append(bufe[:encodedLen], '=', '=', '=', '='))
-	copy(id[:], bufd[:])
-	return err
+	decode(id, text)
+	return nil
+}
+
+// decode by unrolling the stdlib base32 algorithm + removing all safe checks
+func decode(id *ID, src []byte) {
+	id[0] = dec[src[0]]<<3 | dec[src[1]]>>2
+	id[1] = dec[src[1]]<<6 | dec[src[2]]<<1 | dec[src[3]]>>4
+	id[2] = dec[src[3]]<<4 | dec[src[4]]>>1
+	id[3] = dec[src[4]]<<7 | dec[src[5]]<<2 | dec[src[6]]>>3
+	id[4] = dec[src[6]]<<5 | dec[src[7]]
+	id[5] = dec[src[8]]<<3 | dec[src[9]]>>2
+	id[6] = dec[src[9]]<<6 | dec[src[10]]<<1 | dec[src[11]]>>4
+	id[7] = dec[src[11]]<<4 | dec[src[12]]>>1
+	id[8] = dec[src[12]]<<7 | dec[src[13]]<<2 | dec[src[14]]>>3
+	id[9] = dec[src[14]]<<5 | dec[src[15]]
+	id[10] = dec[src[16]]<<3 | dec[src[17]]>>2
+	id[11] = dec[src[17]]<<6 | dec[src[18]]<<1 | dec[src[19]]>>4
 }
 
 // Time returns the timestamp part of the id.

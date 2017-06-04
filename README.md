@@ -89,15 +89,15 @@ guid.Counter()
 Benchmark against Go [Maxim Bublis](https://github.com/satori)'s [UUID](https://github.com/satori/go.uuid).
 
 ```
-BenchmarkXID          10000000         138 ns/op        64 B/op         2 allocs/op
-BenchmarkXID-2        20000000          96.3 ns/op        64 B/op         2 allocs/op
-BenchmarkXID-4        20000000          69.7 ns/op        64 B/op         2 allocs/op
-BenchmarkUUIDv1       10000000         207 ns/op        48 B/op         1 allocs/op
-BenchmarkUUIDv1-2     10000000         205 ns/op        48 B/op         1 allocs/op
-BenchmarkUUIDv1-4      5000000         238 ns/op        48 B/op         1 allocs/op
-BenchmarkUUIDv4        1000000        1503 ns/op        64 B/op         2 allocs/op
-BenchmarkUUIDv4-2      1000000        1459 ns/op        64 B/op         2 allocs/op
-BenchmarkUUIDv4-4      1000000        1468 ns/op        64 B/op         2 allocs/op```
+BenchmarkXID        	20000000	        91.1 ns/op	      32 B/op	       1 allocs/op
+BenchmarkXID-2      	20000000	        55.9 ns/op	      32 B/op	       1 allocs/op
+BenchmarkXID-4      	50000000	        32.3 ns/op	      32 B/op	       1 allocs/op
+BenchmarkUUIDv1     	10000000	       204 ns/op	      48 B/op	       1 allocs/op
+BenchmarkUUIDv1-2   	10000000	       160 ns/op	      48 B/op	       1 allocs/op
+BenchmarkUUIDv1-4   	10000000	       195 ns/op	      48 B/op	       1 allocs/op
+BenchmarkUUIDv4     	 1000000	      1503 ns/op	      64 B/op	       2 allocs/op
+BenchmarkUUIDv4-2   	 1000000	      1427 ns/op	      64 B/op	       2 allocs/op
+BenchmarkUUIDv4-4   	 1000000	      1452 ns/op	      64 B/op	       2 allocs/op
 ```
 
 Note: UUIDv1 requires a global lock, hence the performence degrading as we add more CPUs.
