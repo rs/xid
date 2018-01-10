@@ -210,7 +210,7 @@ func TestID_IsNil(t *testing.T) {
 		},
 		{
 			name: "Nil ID",
-			id:   nilID,
+			id:   ID{},
 			want: true,
 		},
 	}
