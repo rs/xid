@@ -62,7 +62,6 @@ type ID [rawLen]byte
 
 const (
 	encodedLen = 20 // string encoded len
-	decodedLen = 15 // len after base32 decoding with the padded data
 	rawLen     = 12 // binary raw len
 
 	// encoding stores a custom version of the base32 encoding with lower case
