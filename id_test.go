@@ -215,10 +215,6 @@ func TestID_IsNil(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.id.IsNil(); got != tt.want {
-				t.Errorf("ID.IsNil() = %v, want %v", got, tt.want)
-			}
-		})
+		assert.Equal(t, tt.id.IsNil(), tt.want)
 	}
 }
