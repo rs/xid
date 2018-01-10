@@ -52,8 +52,8 @@ Features:
 - Unicity guaranteed for 16,777,216 (24 bits) unique ids per second and per host/process
 - Lock-free (i.e.: unlike UUIDv1 and v2)
 
-Best used with [xlog](https://github.com/rs/xlog)'s
-[RequestIDHandler](https://godoc.org/github.com/rs/xlog#RequestIDHandler).
+Best used with [zerolog](https://github.com/rs/zerolog)'s
+[RequestIDHandler](https://godoc.org/github.com/rs/zerolog/hlog#RequestIDHandler).
 
 References:
 
