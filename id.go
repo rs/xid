@@ -84,6 +84,9 @@ var machineID = readMachineID()
 // pid stores the current process id
 var pid = os.Getpid()
 
+// Nil allows to check if the xid.ID == xid.Nil
+var Nil ID
+
 // dec is the decoding map for base32 encoding
 var dec [256]byte
 
@@ -274,4 +277,9 @@ func (id *ID) Scan(value interface{}) (err error) {
 	default:
 		return fmt.Errorf("xid: scanning unsupported type: %T", value)
 	}
+}
+
+// IsNil Returns true if this is a "nil" ID
+func (id ID) IsNil() bool {
+	return id == Nil
 }

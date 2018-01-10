@@ -196,3 +196,29 @@ func BenchmarkFromString(b *testing.B) {
 // 		}
 // 	})
 // }
+
+func TestID_IsNil(t *testing.T) {
+	tests := []struct {
+		name string
+		id   ID
+		want bool
+	}{
+		{
+			name: "ID not nil",
+			id:   New(),
+			want: false,
+		},
+		{
+			name: "Nil ID",
+			id:   Nil,
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.id.IsNil(); got != tt.want {
+				t.Errorf("ID.IsNil() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
