@@ -30,7 +30,7 @@
 //   - Non configured, you don't need set a unique machine and/or data center id
 //   - K-ordered
 //   - Embedded time with 1 second precision
-//   - Unicity guaranted for 16,777,216 (24 bits) unique ids per second and per host/process
+//   - Unicity guaranteed for 16,777,216 (24 bits) unique ids per second and per host/process
 //
 // Best used with xlog's RequestIDHandler (https://godoc.org/github.com/rs/xlog#RequestIDHandler).
 //
@@ -62,7 +62,6 @@ type ID [rawLen]byte
 
 const (
 	encodedLen = 20 // string encoded len
-	decodedLen = 15 // len after base32 decoding with the padded data
 	rawLen     = 12 // binary raw len
 
 	// encoding stores a custom version of the base32 encoding with lower case
@@ -84,6 +83,8 @@ var machineID = readMachineID()
 
 // pid stores the current process id
 var pid = os.Getpid()
+
+var nilID ID
 
 // dec is the decoding map for base32 encoding
 var dec [256]byte
@@ -114,7 +115,9 @@ func readMachineID() []byte {
 	id := make([]byte, 3)
 	if hostname, err := os.Hostname(); err == nil {
 		hw := md5.New()
-		hw.Write([]byte(hostname))
+		if _, err = hw.Write([]byte(hostname)); err != nil {
+			panic(fmt.Errorf("xid: cannot write hostname hash: %v;", err))
+		}
 		copy(id, hw.Sum(nil))
 	} else {
 		// Fallback to rand number if machine id can't be gathered
@@ -134,7 +137,7 @@ func randInt() uint32 {
 	return uint32(b[0])<<16 | uint32(b[1])<<8 | uint32(b[2])
 }
 
-// New generates a globaly unique ID
+// New generates a globally unique ID
 func New() ID {
 	var id ID
 	// Timestamp, 4 bytes, big endian
@@ -273,4 +276,9 @@ func (id *ID) Scan(value interface{}) (err error) {
 	default:
 		return fmt.Errorf("xid: scanning unsupported type: %T", value)
 	}
+}
+
+// IsNil Returns true if this is a "nil" ID
+func (id ID) IsNil() bool {
+	return id == nilID
 }
