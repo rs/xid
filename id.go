@@ -115,8 +115,8 @@ func readMachineID() []byte {
 	id := make([]byte, 3)
 	if hostname, err := os.Hostname(); err == nil {
 		hw := md5.New()
-		if _, errW := hw.Write([]byte(hostname)); errW != nil {
-			panic(fmt.Errorf("xid: cannot write hostname hash: %v;", errW))
+		if _, err = hw.Write([]byte(hostname)); err != nil {
+			panic(fmt.Errorf("xid: cannot write hostname hash: %v;", err))
 		}
 		copy(id, hw.Sum(nil))
 	} else {
