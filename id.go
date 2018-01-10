@@ -48,6 +48,8 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"hash/crc32"
+	"io/ioutil"
 	"os"
 	"sync/atomic"
 	"time"
@@ -92,6 +94,16 @@ func init() {
 	}
 	for i := 0; i < len(encoding); i++ {
 		dec[encoding[i]] = byte(i)
+	}
+
+	// If PID is 1 and /proc/1/cpuset exists and is not /, we can assume that we
+	// are in a form of container and use the content of /proc/1/cpuset instead
+	// of the PID.
+	if pid == 1 {
+		b, err := ioutil.ReadFile("/proc/1/cpuset")
+		if err == nil && len(b) > 1 {
+			pid = int(crc32.ChecksumIEEE(b))
+		}
 	}
 }
 
