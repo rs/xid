@@ -61,6 +61,7 @@ References:
 - https://en.wikipedia.org/wiki/Universally_unique_identifier
 - https://blog.twitter.com/2010/announcing-snowflake
 - Python port by [Graham Abbott](https://github.com/graham): https://github.com/graham/python_xid
+- Scala port by [Egor Kolotaev](https://github.com/kolotaev): https://github.com/kolotaev/ride
 
 ## Install
 
