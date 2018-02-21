@@ -55,6 +55,10 @@ Features:
 Best used with [zerolog](https://github.com/rs/zerolog)'s
 [RequestIDHandler](https://godoc.org/github.com/rs/zerolog/hlog#RequestIDHandler).
 
+Notes:
+
+- Xid is dependent on the system time, a monotonic counter and so is not cryptographically secure. If unpredictability of IDs is important, you should not use Xids. It is worth noting that most of the other UUID like implementations are also not cryptographically secure. You shoud use libraries that rely on cryptographically secure sources (like /dev/urandom on unix, crypto/rand in golang), if you want a truly random ID generator.
+
 References:
 
 - http://www.slideshare.net/davegardnerisme/unique-id-generation-in-distributed-systems
