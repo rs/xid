@@ -178,7 +178,7 @@ func (id ID) MarshalText() ([]byte, error) {
 	return text, nil
 }
 
-// MarshalJSON implements encoding/text TextMarshaler interface
+// MarshalJSON implements encoding/json Marshaler interface
 func (id ID) MarshalJSON() ([]byte, error) {
 	if id.IsNil() {
 		return []byte("null"), nil
@@ -225,6 +225,7 @@ func (id *ID) UnmarshalText(text []byte) error {
 	return nil
 }
 
+// UnmarshalJSON implements encoding/json Unmarshaler interface
 func (id *ID) UnmarshalJSON(b []byte) error {
 	s := string(b)
 	if s == "null" {
