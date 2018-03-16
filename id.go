@@ -178,6 +178,15 @@ func (id ID) MarshalText() ([]byte, error) {
 	return text, nil
 }
 
+// MarshalJSON implements encoding/text TextMarshaler interface
+func (id ID) MarshalJSON() ([]byte, error) {
+	if id.IsNil() {
+		return []byte("null"), nil
+	}
+	text, err := id.MarshalText()
+	return []byte(`"` + string(text) + `"`), err
+}
+
 // encode by unrolling the stdlib base32 algorithm + removing all safe checks
 func encode(dst, id []byte) {
 	dst[0] = encoding[id[0]>>3]
@@ -214,6 +223,15 @@ func (id *ID) UnmarshalText(text []byte) error {
 	}
 	decode(id, text)
 	return nil
+}
+
+func (id *ID) UnmarshalJSON(b []byte) error {
+	s := string(b)
+	if s == "null" {
+		*id = nilID
+		return nil
+	}
+	return id.UnmarshalText(b[1 : len(b)-1])
 }
 
 // decode by unrolling the stdlib base32 algorithm + removing all safe checks
@@ -262,6 +280,9 @@ func (id ID) Counter() int32 {
 
 // Value implements the driver.Valuer interface.
 func (id ID) Value() (driver.Value, error) {
+	if id.IsNil() {
+		return nil, nil
+	}
 	b, err := id.MarshalText()
 	return string(b), err
 }
@@ -273,6 +294,9 @@ func (id *ID) Scan(value interface{}) (err error) {
 		return id.UnmarshalText([]byte(val))
 	case []byte:
 		return id.UnmarshalText(val)
+	case nil:
+		*id = nilID
+		return nil
 	default:
 		return fmt.Errorf("xid: scanning unsupported type: %T", value)
 	}
