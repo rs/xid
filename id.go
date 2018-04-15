@@ -51,6 +51,7 @@ import (
 	"hash/crc32"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"sync/atomic"
 	"time"
 )
@@ -69,25 +70,27 @@ const (
 	encoding = "0123456789abcdefghijklmnopqrstuv"
 )
 
-// ErrInvalidID is returned when trying to unmarshal an invalid ID
-var ErrInvalidID = errors.New("xid: invalid ID")
+var (
+	// ErrInvalidID is returned when trying to unmarshal an invalid ID
+	ErrInvalidID = errors.New("xid: invalid ID")
 
-// objectIDCounter is atomically incremented when generating a new ObjectId
-// using NewObjectId() function. It's used as a counter part of an id.
-// This id is initialized with a random value.
-var objectIDCounter = randInt()
+	// objectIDCounter is atomically incremented when generating a new ObjectId
+	// using NewObjectId() function. It's used as a counter part of an id.
+	// This id is initialized with a random value.
+	objectIDCounter = randInt()
 
-// machineId stores machine id generated once and used in subsequent calls
-// to NewObjectId function.
-var machineID = readMachineID()
+	// machineId stores machine id generated once and used in subsequent calls
+	// to NewObjectId function.
+	machineID = readMachineID()
 
-// pid stores the current process id
-var pid = os.Getpid()
+	// pid stores the current process id
+	pid = os.Getpid()
 
-var nilID ID
+	nilID ID
 
-// dec is the decoding map for base32 encoding
-var dec [256]byte
+	// dec is the decoding map for base32 encoding
+	dec [256]byte
+)
 
 func init() {
 	for i := 0; i < len(dec); i++ {
@@ -97,14 +100,14 @@ func init() {
 		dec[encoding[i]] = byte(i)
 	}
 
-	// If PID is 1 and /proc/1/cpuset exists and is not /, we can assume that we
+	// If /proc/1/cpuset exists and is not /, we can assume that we
 	// are in a form of container and use the content of /proc/1/cpuset instead
 	// of the PID.
-	if pid == 1 {
-		b, err := ioutil.ReadFile("/proc/1/cpuset")
-		if err == nil && len(b) > 1 {
-			pid = int(crc32.ChecksumIEEE(b))
-		}
+	// See http://man7.org/linux/man-pages/man7/cpuset.7.html.
+	b, err := ioutil.ReadFile("/proc/1/cpuset")
+	if err == nil && len(b) > 1 {
+		b = append(b, []byte(strconv.Itoa(pid))...)
+		pid = int(crc32.ChecksumIEEE(b))
 	}
 }
 
