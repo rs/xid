@@ -51,6 +51,7 @@ import (
 	"hash/crc32"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"sync/atomic"
 	"time"
 )
@@ -99,14 +100,14 @@ func init() {
 		dec[encoding[i]] = byte(i)
 	}
 
-	// If PID is 1 and /proc/1/cpuset exists and is not /, we can assume that we
+	// If /proc/1/cpuset exists and is not /, we can assume that we
 	// are in a form of container and use the content of /proc/1/cpuset instead
 	// of the PID.
-	if pid == 1 {
-		b, err := ioutil.ReadFile("/proc/1/cpuset")
-		if err == nil && len(b) > 1 {
-			pid = int(crc32.ChecksumIEEE(b))
-		}
+	// See http://man7.org/linux/man-pages/man7/cpuset.7.html.
+	b, err := ioutil.ReadFile("/proc/1/cpuset")
+	if err == nil && len(b) > 1 {
+		b = append(b, []byte(strconv.Itoa(pid))...)
+		pid = int(crc32.ChecksumIEEE(b))
 	}
 }
 
