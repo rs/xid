@@ -1,7 +1,8 @@
 language: go
 go:
-- 1.5
-- tip
+- "1.5"
+- "1.10"
+- "master"
 matrix:
   allow_failures:
-      - go: tip
+      - go: "master"
