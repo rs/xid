@@ -99,14 +99,12 @@ func init() {
 		dec[encoding[i]] = byte(i)
 	}
 
-	// If PID is 1 and /proc/1/cpuset exists and is not /, we can assume that we
-	// are in a form of container and use the content of /proc/1/cpuset instead
-	// of the PID.
-	if pid == 1 {
-		b, err := ioutil.ReadFile("/proc/1/cpuset")
-		if err == nil && len(b) > 1 {
-			pid = int(crc32.ChecksumIEEE(b))
-		}
+	// If /proc/self/cpuset exists and is not /, we can assume that we are in a
+	// form of container and use the content of cpuset xor-ed with the PID in
+	// order get a reasonable machine global unique PID.
+	b, err := ioutil.ReadFile("/proc/self/cpuset")
+	if err == nil && len(b) > 1 {
+		pid ^= int(crc32.ChecksumIEEE(b))
 	}
 }
 
