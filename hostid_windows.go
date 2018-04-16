@@ -5,6 +5,8 @@ package xid
 import (
 	"fmt"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
 func readPlatformMachineID() (string, error) {
