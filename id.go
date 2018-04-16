@@ -113,11 +113,13 @@ func init() {
 // a runtime error.
 func readMachineID() []byte {
 	id := make([]byte, 3)
-	if hostname, err := os.Hostname(); err == nil {
+	hid, err := readPlatformMachineID()
+	if err != nil || len(hid) == 0 {
+		hid, err = os.Hostname()
+	}
+	if err == nil && len(hid) != 0 {
 		hw := md5.New()
-		if _, err = hw.Write([]byte(hostname)); err != nil {
-			panic(fmt.Errorf("xid: cannot write hostname hash: %v;", err))
-		}
+		hw.Write([]byte(hid))
 		copy(id, hw.Sum(nil))
 	} else {
 		// Fallback to rand number if machine id can't be gathered
