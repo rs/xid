@@ -69,25 +69,27 @@ const (
 	encoding = "0123456789abcdefghijklmnopqrstuv"
 )
 
-// ErrInvalidID is returned when trying to unmarshal an invalid ID
-var ErrInvalidID = errors.New("xid: invalid ID")
+var (
+	// ErrInvalidID is returned when trying to unmarshal an invalid ID
+	ErrInvalidID = errors.New("xid: invalid ID")
 
-// objectIDCounter is atomically incremented when generating a new ObjectId
-// using NewObjectId() function. It's used as a counter part of an id.
-// This id is initialized with a random value.
-var objectIDCounter = randInt()
+	// objectIDCounter is atomically incremented when generating a new ObjectId
+	// using NewObjectId() function. It's used as a counter part of an id.
+	// This id is initialized with a random value.
+	objectIDCounter = randInt()
 
-// machineId stores machine id generated once and used in subsequent calls
-// to NewObjectId function.
-var machineID = readMachineID()
+	// machineId stores machine id generated once and used in subsequent calls
+	// to NewObjectId function.
+	machineID = readMachineID()
 
-// pid stores the current process id
-var pid = os.Getpid()
+	// pid stores the current process id
+	pid = os.Getpid()
 
-var nilID ID
+	nilID ID
 
-// dec is the decoding map for base32 encoding
-var dec [256]byte
+	// dec is the decoding map for base32 encoding
+	dec [256]byte
+)
 
 func init() {
 	for i := 0; i < len(dec); i++ {
