@@ -53,6 +53,7 @@ import (
 	"os"
 	"sync/atomic"
 	"time"
+	"bytes"
 )
 
 // Code inspired from mgo/bson ObjectId
@@ -328,4 +329,11 @@ func FromBytes(b []byte) (ID, error) {
 	}
 	copy(id[:], b)
 	return id, nil
+}
+
+// Compare returns an integer comparing two IDs. It behaves just like `bytes.Compare`.
+// The result will be 0 if two IDs are identical, -1 if current id is less than the other one,
+// and 1 if current id is greater than the other.
+func (id ID) Compare(other ID) int {
+	return bytes.Compare(id[:], other[:])
 }

@@ -262,3 +262,26 @@ func TestFromBytes_InvalidBytes(t *testing.T) {
 		}
 	}
 }
+
+func TestID_Compare(t *testing.T) {
+	pairs := []struct{
+		left ID
+		right ID
+		expected int
+	} {
+		{IDs[1].id, IDs[0].id, -1},
+		{ID{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, IDs[2].id, -1},
+		{IDs[0].id, IDs[0].id, 0},
+	}
+	for _, p := range pairs {
+		assert.Equal(
+			t, p.expected, p.left.Compare(p.right),
+			"%s Compare to %s should return %d", p.left, p.right, p.expected,
+		)
+		assert.Equal(
+			t, -1 * p.expected, p.right.Compare(p.left),
+			"%s Compare to %s should return %d", p.right, p.left, - 1 * p.expected,
+		)
+	}
+}
+
