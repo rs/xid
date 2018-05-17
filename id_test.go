@@ -285,3 +285,40 @@ func TestID_Compare(t *testing.T) {
 	}
 }
 
+var IDList = []ID{IDs[0].id, IDs[1].id, IDs[2].id}
+
+
+func TestSorter_Len(t *testing.T) {
+	assert.Equal(t, 0, sorter([]ID{}).Len())
+	assert.Equal(t, 3, sorter(IDList).Len())
+}
+
+
+func TestSorter_Less(t *testing.T) {
+	sorter := sorter(IDList)
+	assert.True(t, sorter.Less(1, 0))
+	assert.False(t, sorter.Less(2, 1))
+	assert.False(t, sorter.Less(0, 0))
+}
+
+func TestSorter_Swap(t *testing.T) {
+	ids := make([]ID, 0)
+	for _, id := range IDList {
+		ids = append(ids, id)
+	}
+	sorter := sorter(ids)
+	sorter.Swap(0, 1)
+	assert.Equal(t, ids[0], IDList[1])
+	assert.Equal(t, ids[1], IDList[0])
+	sorter.Swap(2, 2)
+	assert.Equal(t, ids[2], IDList[2])
+}
+
+func TestSort(t *testing.T) {
+	ids := make([]ID, 0)
+	for _, id := range IDList {
+		ids = append(ids, id)
+	}
+	Sort(ids)
+	assert.Equal(t, ids, []ID{IDList[1], IDList[2], IDList[0]})
+}
