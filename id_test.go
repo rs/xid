@@ -218,6 +218,7 @@ func TestID_IsNil(t *testing.T) {
 		assert.Equal(t, tt.id.IsNil(), tt.want)
 	}
 }
+
 func TestNilID(t *testing.T) {
 	var id ID
 	nilid := NilID()
@@ -226,4 +227,38 @@ func TestNilID(t *testing.T) {
 
 func TestNilID_IsNil(t *testing.T) {
 	assert.True(t, NilID().IsNil())
+}
+
+func TestID_Bytes(t *testing.T) {
+	id := New()
+	underlying := [rawLen]byte(id)
+	b := id.Bytes()
+	for i := range underlying {
+		assert.Equal(t, underlying[i], b[i])
+	}
+}
+
+func TestFromBytes_Invariant(t *testing.T) {
+	id := New()
+	b, err := FromBytes(id.Bytes())
+	assert.NoError(t, err)
+	assert.Equal(t, b, id)
+}
+
+func TestFromBytes_InvalidBytes(t *testing.T) {
+	cases := []struct{
+		length int; shouldFail bool} {
+		{11, true},
+		{12, false},
+		{13, true},
+	}
+	for _, c := range cases {
+		b := make([]byte, c.length, c.length)
+		_, err := FromBytes(b)
+		if c.shouldFail {
+			assert.Error(t, err, "Length %d should fail.", c.length)
+		} else {
+			assert.NoError(t, err, "Length %d should not fail.", c.length)
+		}
+	}
 }

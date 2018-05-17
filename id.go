@@ -314,3 +314,18 @@ func (id ID) IsNil() bool {
 func NilID() ID {
 	return nilID
 }
+
+// Bytes returns the byte array representation of `ID`
+func (id ID) Bytes() []byte {
+	return id[:]
+}
+
+// FromBytes convert the byte array representation of `ID` back to `ID`
+func FromBytes(b []byte) (ID, error) {
+	var id ID
+	if len(b) != rawLen {
+		return id, ErrInvalidID
+	}
+	copy(id[:], b)
+	return id, nil
+}
