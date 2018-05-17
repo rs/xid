@@ -218,3 +218,12 @@ func TestID_IsNil(t *testing.T) {
 		assert.Equal(t, tt.id.IsNil(), tt.want)
 	}
 }
+func TestNilID(t *testing.T) {
+	var id ID
+	nilid := NilID()
+	assert.Equal(t, id, nilid)
+}
+
+func TestNilID_IsNil(t *testing.T) {
+	assert.True(t, NilID().IsNil())
+}

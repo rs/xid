@@ -309,3 +309,8 @@ func (id *ID) Scan(value interface{}) (err error) {
 func (id ID) IsNil() bool {
 	return id == nilID
 }
+
+// NilID returns a zero value for `xid.ID`.
+func NilID() ID {
+	return nilID
+}
