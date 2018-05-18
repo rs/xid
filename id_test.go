@@ -218,3 +218,107 @@ func TestID_IsNil(t *testing.T) {
 		assert.Equal(t, tt.id.IsNil(), tt.want)
 	}
 }
+
+func TestNilID(t *testing.T) {
+	var id ID
+	nilid := NilID()
+	assert.Equal(t, id, nilid)
+}
+
+func TestNilID_IsNil(t *testing.T) {
+	assert.True(t, NilID().IsNil())
+}
+
+func TestID_Bytes(t *testing.T) {
+	id := New()
+	underlying := [rawLen]byte(id)
+	b := id.Bytes()
+	for i := range underlying {
+		assert.Equal(t, underlying[i], b[i])
+	}
+}
+
+func TestFromBytes_Invariant(t *testing.T) {
+	id := New()
+	b, err := FromBytes(id.Bytes())
+	assert.NoError(t, err)
+	assert.Equal(t, b, id)
+}
+
+func TestFromBytes_InvalidBytes(t *testing.T) {
+	cases := []struct{
+		length int; shouldFail bool} {
+		{11, true},
+		{12, false},
+		{13, true},
+	}
+	for _, c := range cases {
+		b := make([]byte, c.length, c.length)
+		_, err := FromBytes(b)
+		if c.shouldFail {
+			assert.Error(t, err, "Length %d should fail.", c.length)
+		} else {
+			assert.NoError(t, err, "Length %d should not fail.", c.length)
+		}
+	}
+}
+
+func TestID_Compare(t *testing.T) {
+	pairs := []struct{
+		left ID
+		right ID
+		expected int
+	} {
+		{IDs[1].id, IDs[0].id, -1},
+		{ID{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, IDs[2].id, -1},
+		{IDs[0].id, IDs[0].id, 0},
+	}
+	for _, p := range pairs {
+		assert.Equal(
+			t, p.expected, p.left.Compare(p.right),
+			"%s Compare to %s should return %d", p.left, p.right, p.expected,
+		)
+		assert.Equal(
+			t, -1 * p.expected, p.right.Compare(p.left),
+			"%s Compare to %s should return %d", p.right, p.left, - 1 * p.expected,
+		)
+	}
+}
+
+var IDList = []ID{IDs[0].id, IDs[1].id, IDs[2].id}
+
+
+func TestSorter_Len(t *testing.T) {
+	assert.Equal(t, 0, sorter([]ID{}).Len())
+	assert.Equal(t, 3, sorter(IDList).Len())
+}
+
+
+func TestSorter_Less(t *testing.T) {
+	sorter := sorter(IDList)
+	assert.True(t, sorter.Less(1, 0))
+	assert.False(t, sorter.Less(2, 1))
+	assert.False(t, sorter.Less(0, 0))
+}
+
+func TestSorter_Swap(t *testing.T) {
+	ids := make([]ID, 0)
+	for _, id := range IDList {
+		ids = append(ids, id)
+	}
+	sorter := sorter(ids)
+	sorter.Swap(0, 1)
+	assert.Equal(t, ids[0], IDList[1])
+	assert.Equal(t, ids[1], IDList[0])
+	sorter.Swap(2, 2)
+	assert.Equal(t, ids[2], IDList[2])
+}
+
+func TestSort(t *testing.T) {
+	ids := make([]ID, 0)
+	for _, id := range IDList {
+		ids = append(ids, id)
+	}
+	Sort(ids)
+	assert.Equal(t, ids, []ID{IDList[1], IDList[2], IDList[0]})
+}
