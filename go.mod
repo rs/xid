@@ -1,1 +1,1 @@
-module github.com/komuw/xid
+module github.com/rs/xid
