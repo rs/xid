@@ -1,1 +1,1 @@
-module github.com/rs/xid
+module "github.com/rs/xid"
