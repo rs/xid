@@ -371,9 +371,7 @@ func TestSorter_Less(t *testing.T) {
 
 func TestSorter_Swap(t *testing.T) {
 	ids := make([]ID, 0)
-	for _, id := range IDList {
-		ids = append(ids, id)
-	}
+	ids = append(ids, IDList...)
 	sorter := sorter(ids)
 	sorter.Swap(0, 1)
 	if got, want := ids[0], IDList[1]; !reflect.DeepEqual(got, want) {
@@ -390,9 +388,7 @@ func TestSorter_Swap(t *testing.T) {
 
 func TestSort(t *testing.T) {
 	ids := make([]ID, 0)
-	for _, id := range IDList {
-		ids = append(ids, id)
-	}
+	ids = append(ids, IDList...)
 	Sort(ids)
 	if got, want := ids, []ID{IDList[1], IDList[2], IDList[0]}; !reflect.DeepEqual(got, want) {
 		t.Fail()
