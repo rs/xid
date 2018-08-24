@@ -293,8 +293,7 @@ func (id ID) Value() (driver.Value, error) {
 	if id.IsNil() {
 		return nil, nil
 	}
-	b, err := id.MarshalText()
-	return string(b), err
+	return id[:], nil
 }
 
 // Scan implements the sql.Scanner interface.
@@ -303,7 +302,8 @@ func (id *ID) Scan(value interface{}) (err error) {
 	case string:
 		return id.UnmarshalText([]byte(val))
 	case []byte:
-		return id.UnmarshalText(val)
+		copy((*id)[:], val)
+		return nil
 	case nil:
 		*id = nilID
 		return nil

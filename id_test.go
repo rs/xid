@@ -176,8 +176,12 @@ func TestIDDriverValue(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := "9m4e2mr0ui3e8a215n4g"; got != want {
-		t.Errorf("Value() = %v, want %v", got, want)
+	if gotb, ok := got.([]byte); ok {
+		if !bytes.Equal(gotb, id[:]) {
+			t.Errorf("Value() = %v, want %v", gotb, id)
+		}
+	} else {
+		t.Errorf("Value() returned unexpected type: %T", got)
 	}
 }
 
@@ -205,7 +209,7 @@ func TestIDDriverScanError(t *testing.T) {
 
 func TestIDDriverScanByteFromDatabase(t *testing.T) {
 	got := ID{}
-	bs := []byte("9m4e2mr0ui3e8a215n4g")
+	bs := []byte{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}
 	err := got.Scan(bs)
 	if err != nil {
 		t.Fatal(err)
