@@ -216,46 +216,6 @@ func TestIDDriverScanByteFromDatabase(t *testing.T) {
 	}
 }
 
-func BenchmarkNew(b *testing.B) {
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			_ = New()
-		}
-	})
-}
-
-func BenchmarkNewString(b *testing.B) {
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			_ = New().String()
-		}
-	})
-}
-
-func BenchmarkFromString(b *testing.B) {
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			_, _ = FromString("9m4e2mr0ui3e8a215n4g")
-		}
-	})
-}
-
-// func BenchmarkUUIDv1(b *testing.B) {
-// 	b.RunParallel(func(pb *testing.PB) {
-// 		for pb.Next() {
-// 			_ = uuid.NewV1().String()
-// 		}
-// 	})
-// }
-
-// func BenchmarkUUIDv4(b *testing.B) {
-// 	b.RunParallel(func(pb *testing.PB) {
-// 		for pb.Next() {
-// 			_ = uuid.NewV4().String()
-// 		}
-// 	})
-// }
-
 func TestID_IsNil(t *testing.T) {
 	tests := []struct {
 		name string
