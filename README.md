@@ -66,6 +66,7 @@ References:
 - https://blog.twitter.com/2010/announcing-snowflake
 - Python port by [Graham Abbott](https://github.com/graham): https://github.com/graham/python_xid
 - Scala port by [Egor Kolotaev](https://github.com/kolotaev): https://github.com/kolotaev/ride
+- Rust port by [Jérôme Renard](https://github.com/jeromer/): https://github.com/jeromer/libxid
 
 ## Install
 
