@@ -73,7 +73,7 @@ const (
 )
 
 var (
-	// ErrInvalidID is returned when trying to unmarshal an invalid ID
+	// errInvalidID is returned when trying to unmarshal an invalid ID
 	errInvalidID = errors.New("xid: invalid ID")
 
 	// objectIDCounter is atomically incremented when generating a new ObjectId
