@@ -74,7 +74,7 @@ const (
 
 var (
 	// ErrInvalidID is returned when trying to unmarshal an invalid ID
-	ErrInvalidID = errors.New("xid: invalid ID")
+	errInvalidID = errors.New("xid: invalid ID")
 
 	// objectIDCounter is atomically incremented when generating a new ObjectId
 	// using NewObjectId() function. It's used as a counter part of an id.
@@ -227,11 +227,11 @@ func encode(dst, id []byte) {
 // UnmarshalText implements encoding/text TextUnmarshaler interface
 func (id *ID) UnmarshalText(text []byte) error {
 	if len(text) != encodedLen {
-		return ErrInvalidID
+		return errInvalidID
 	}
 	for _, c := range text {
 		if dec[c] == 0xFF {
-			return ErrInvalidID
+			return errInvalidID
 		}
 	}
 	decode(id, text)
@@ -338,7 +338,7 @@ func (id ID) Bytes() []byte {
 func FromBytes(b []byte) (ID, error) {
 	var id ID
 	if len(b) != rawLen {
-		return id, ErrInvalidID
+		return id, errInvalidID
 	}
 	copy(id[:], b)
 	return id, nil
