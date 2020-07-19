@@ -105,6 +105,14 @@ func TestIDString(t *testing.T) {
 	}
 }
 
+func TestIDEncode(t *testing.T) {
+	id := ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}
+	text := make([]byte, encodedLen)
+	if got, want := string(id.Encode(text)), "9m4e2mr0ui3e8a215n4g"; got != want {
+		t.Errorf("Encode() = %v, want %v", got, want)
+	}
+}
+
 func TestFromString(t *testing.T) {
 	got, err := FromString("9m4e2mr0ui3e8a215n4g")
 	if err != nil {

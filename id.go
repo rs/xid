@@ -181,6 +181,12 @@ func (id ID) String() string {
 	return *(*string)(unsafe.Pointer(&text))
 }
 
+// Encode encodes the id using base32 encoding, writing 20 bytes to dst and return it.
+func (id ID) Encode(dst []byte) []byte {
+	encode(dst, id[:])
+	return dst
+}
+
 // MarshalText implements encoding/text TextMarshaler interface
 func (id ID) MarshalText() ([]byte, error) {
 	text := make([]byte, encodedLen)
