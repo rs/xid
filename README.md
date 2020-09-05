@@ -68,6 +68,7 @@ References:
 - Scala port by [Egor Kolotaev](https://github.com/kolotaev): https://github.com/kolotaev/ride
 - Rust port by [Jérôme Renard](https://github.com/jeromer/): https://github.com/jeromer/libxid
 - Ruby port by [Valar](https://github.com/valarpirai/): https://github.com/valarpirai/ruby_xid
+- Java port by [0xShamil](https://github.com/0xShamil/): https://github.com/0xShamil/java-xid
 
 ## Install
 
