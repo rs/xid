@@ -176,6 +176,10 @@ func TestIDJSONUnmarshalingError(t *testing.T) {
 	if err != ErrInvalidID {
 		t.Errorf("json.Unmarshal() err=%v, want %v", err, ErrInvalidID)
 	}
+	err = json.Unmarshal([]byte(`{"ID":1}`), &v)
+	if err != ErrInvalidID {
+		t.Errorf("json.Unmarshal() err=%v, want %v", err, ErrInvalidID)
+	}
 }
 
 func TestIDDriverValue(t *testing.T) {
