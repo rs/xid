@@ -54,7 +54,6 @@ import (
 	"sort"
 	"sync/atomic"
 	"time"
-	"unsafe"
 )
 
 // Code inspired from mgo/bson ObjectId
@@ -174,7 +173,7 @@ func FromString(id string) (ID, error) {
 func (id ID) String() string {
 	text := make([]byte, encodedLen)
 	encode(text, id[:])
-	return *(*string)(unsafe.Pointer(&text))
+	return string(text)
 }
 
 // Encode encodes the id using base32 encoding, writing 20 bytes to dst and return it.
