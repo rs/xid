@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"reflect"
 	"testing"
+	"testing/quick"
 	"time"
 )
 
@@ -250,6 +252,60 @@ func BenchmarkFromString(b *testing.B) {
 			_, _ = FromString("9m4e2mr0ui3e8a215n4g")
 		}
 	})
+}
+
+func TestFromStringQuick(t *testing.T) {
+	f := func(id1 ID, c byte) bool {
+		s1 := id1.String()
+		for i := range s1 {
+			s2 := []byte(s1)
+			s2[i] = c
+			id2, err := FromString(string(s2))
+			if id1 == id2 && err == nil && c != s1[i] {
+				t.Logf("comparing XIDs:\na: %q\nb: %q (index %d changed to %c)", s1, s2, i, c)
+				return false
+			}
+		}
+		return true
+	}
+	err := quick.Check(f, &quick.Config{
+		Values: func(args []reflect.Value, r *rand.Rand) {
+			i := r.Intn(len(encoding))
+			args[0] = reflect.ValueOf(New())
+			args[1] = reflect.ValueOf(byte(encoding[i]))
+		},
+		MaxCount: 1000,
+	})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestFromStringQuickInvalidChars(t *testing.T) {
+	f := func(id1 ID, c byte) bool {
+		s1 := id1.String()
+		for i := range s1 {
+			s2 := []byte(s1)
+			s2[i] = c
+			id2, err := FromString(string(s2))
+			if id1 == id2 && err == nil && c != s1[i] {
+				t.Logf("comparing XIDs:\na: %q\nb: %q (index %d changed to %c)", s1, s2, i, c)
+				return false
+			}
+		}
+		return true
+	}
+	err := quick.Check(f, &quick.Config{
+		Values: func(args []reflect.Value, r *rand.Rand) {
+			i := r.Intn(0xFF)
+			args[0] = reflect.ValueOf(New())
+			args[1] = reflect.ValueOf(byte(i))
+		},
+		MaxCount: 2000,
+	})
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 // func BenchmarkUUIDv1(b *testing.B) {
