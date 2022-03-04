@@ -47,7 +47,6 @@ import (
 	"crypto/rand"
 	"database/sql/driver"
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"hash/crc32"
 	"io/ioutil"
@@ -73,9 +72,6 @@ const (
 )
 
 var (
-	// ErrInvalidID is returned when trying to unmarshal an invalid ID
-	ErrInvalidID = errors.New("xid: invalid ID")
-
 	// objectIDCounter is atomically incremented when generating a new ObjectId
 	// using NewObjectId() function. It's used as a counter part of an id.
 	// This id is initialized with a random value.
