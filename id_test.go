@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"reflect"
 	"testing"
+	"testing/quick"
 	"time"
 )
 
@@ -19,21 +21,21 @@ type IDParts struct {
 }
 
 var IDs = []IDParts{
-	IDParts{
+	{
 		ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9},
 		1300816219,
 		[]byte{0x60, 0xf4, 0x86},
 		0xe428,
 		4271561,
 	},
-	IDParts{
+	{
 		ID{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 		0,
 		[]byte{0x00, 0x00, 0x00},
 		0x0000,
 		0,
 	},
-	IDParts{
+	{
 		ID{0x00, 0x00, 0x00, 0x00, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0x00, 0x00, 0x01},
 		0,
 		[]byte{0xaa, 0xbb, 0xcc},
@@ -252,6 +254,60 @@ func BenchmarkFromString(b *testing.B) {
 	})
 }
 
+func TestFromStringQuick(t *testing.T) {
+	f := func(id1 ID, c byte) bool {
+		s1 := id1.String()
+		for i := range s1 {
+			s2 := []byte(s1)
+			s2[i] = c
+			id2, err := FromString(string(s2))
+			if id1 == id2 && err == nil && c != s1[i] {
+				t.Logf("comparing XIDs:\na: %q\nb: %q (index %d changed to %c)", s1, s2, i, c)
+				return false
+			}
+		}
+		return true
+	}
+	err := quick.Check(f, &quick.Config{
+		Values: func(args []reflect.Value, r *rand.Rand) {
+			i := r.Intn(len(encoding))
+			args[0] = reflect.ValueOf(New())
+			args[1] = reflect.ValueOf(byte(encoding[i]))
+		},
+		MaxCount: 1000,
+	})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestFromStringQuickInvalidChars(t *testing.T) {
+	f := func(id1 ID, c byte) bool {
+		s1 := id1.String()
+		for i := range s1 {
+			s2 := []byte(s1)
+			s2[i] = c
+			id2, err := FromString(string(s2))
+			if id1 == id2 && err == nil && c != s1[i] {
+				t.Logf("comparing XIDs:\na: %q\nb: %q (index %d changed to %c)", s1, s2, i, c)
+				return false
+			}
+		}
+		return true
+	}
+	err := quick.Check(f, &quick.Config{
+		Values: func(args []reflect.Value, r *rand.Rand) {
+			i := r.Intn(0xFF)
+			args[0] = reflect.ValueOf(New())
+			args[1] = reflect.ValueOf(byte(i))
+		},
+		MaxCount: 2000,
+	})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 // func BenchmarkUUIDv1(b *testing.B) {
 // 	b.RunParallel(func(pb *testing.PB) {
 // 		for pb.Next() {
@@ -329,7 +385,7 @@ func TestFromBytes_InvalidBytes(t *testing.T) {
 		{13, true},
 	}
 	for _, c := range cases {
-		b := make([]byte, c.length, c.length)
+		b := make([]byte, c.length)
 		_, err := FromBytes(b)
 		if got, want := err != nil, c.shouldFail; got != want {
 			t.Errorf("FromBytes() error got %v, want %v", got, want)
