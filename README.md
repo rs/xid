@@ -70,6 +70,7 @@ References:
 - Ruby port by [Valar](https://github.com/valarpirai/): https://github.com/valarpirai/ruby_xid
 - Java port by [0xShamil](https://github.com/0xShamil/): https://github.com/0xShamil/java-xid
 - Dart port by [Peter Bwire](https://github.com/pitabwire): https://pub.dev/packages/xid
+- PostgreSQL port by [Rasmus Holm](https://github.com/crholm): https://github.com/modfin/pg-xid
 
 ## Install
 
