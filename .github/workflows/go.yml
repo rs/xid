@@ -18,7 +18,6 @@ jobs:
         with:
           go-version: "1.18"
           check-latest: true
-          cache: true
       - run: go test -race -failfast ./...
   golangci-lint:
     name: golangci-lint
@@ -29,7 +28,6 @@ jobs:
         with:
           go-version: "1.18"
           check-latest: true
-          cache: true
       - uses: golangci/golangci-lint-action@v3
         with:
           version: latest
