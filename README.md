@@ -72,6 +72,7 @@ References:
 - Dart port by [Peter Bwire](https://github.com/pitabwire): https://pub.dev/packages/xid
 - PostgreSQL port by [Rasmus Holm](https://github.com/crholm): https://github.com/modfin/pg-xid
 - Swift port by [Uditha Atukorala](https://github.com/uditha-atukorala): https://github.com/uditha-atukorala/swift-xid
+- C++ port by [Uditha Atukorala](https://github.com/uditha-atukorala): https://github.com/uditha-atukorala/libxid
 
 ## Install
 
