@@ -239,6 +239,7 @@ func (id *ID) UnmarshalText(text []byte) error {
 		}
 	}
 	if !decode(id, text) {
+		*id = nilID
 		return ErrInvalidID
 	}
 	return nil
