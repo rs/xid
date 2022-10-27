@@ -342,7 +342,7 @@ func (id ID) IsNil() bool {
 
 // Alias of IsNil
 func (id ID) IsZero() bool {
-	return IsNil()
+	return id.IsNil()
 }
 
 // NilID returns a zero value for `xid.ID`.
