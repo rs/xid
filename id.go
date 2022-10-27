@@ -340,6 +340,11 @@ func (id ID) IsNil() bool {
 	return id == nilID
 }
 
+// Alias of IsNil
+func (id ID) IsZero() bool {
+	return IsNil()
+}
+
 // NilID returns a zero value for `xid.ID`.
 func NilID() ID {
 	return nilID
