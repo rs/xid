@@ -107,7 +107,7 @@ func init() {
 	}
 }
 
-// readMachineId generates machine id and puts it into the machineId global
+// readMachineID generates machine id and puts it into the machineId global
 // variable. If this function fails to get the hostname, it will cause
 // a runtime error.
 func readMachineID() []byte {
