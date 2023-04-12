@@ -43,7 +43,7 @@ package xid
 
 import (
 	"bytes"
-	"crypto/md5"
+	"crypto/sha256"
 	"crypto/rand"
 	"database/sql/driver"
 	"encoding/binary"
@@ -72,13 +72,11 @@ const (
 )
 
 var (
-	// objectIDCounter is atomically incremented when generating a new ObjectId
-	// using NewObjectId() function. It's used as a counter part of an id.
-	// This id is initialized with a random value.
+	// objectIDCounter is atomically incremented when generating a new ObjectId. It's
+	// used as the counter part of an id. This id is initialized with a random value.
 	objectIDCounter = randInt()
 
-	// machineId stores machine id generated once and used in subsequent calls
-	// to NewObjectId function.
+	// machineID is generated once and used in subsequent calls to the New* functions.
 	machineID = readMachineID()
 
 	// pid stores the current process id
@@ -107,9 +105,9 @@ func init() {
 	}
 }
 
-// readMachineID generates machine id and puts it into the machineId global
-// variable. If this function fails to get the hostname, it will cause
-// a runtime error.
+// readMachineID generates a machine ID, derived from a platform-specific machine ID
+// value, or else the machine's hostname, or else a randomly-generated number.
+// It panics if all of these methods fail.
 func readMachineID() []byte {
 	id := make([]byte, 3)
 	hid, err := readPlatformMachineID()
@@ -117,7 +115,7 @@ func readMachineID() []byte {
 		hid, err = os.Hostname()
 	}
 	if err == nil && len(hid) != 0 {
-		hw := md5.New()
+		hw := sha256.New()
 		hw.Write([]byte(hid))
 		copy(id, hw.Sum(nil))
 	} else {
@@ -148,7 +146,7 @@ func NewWithTime(t time.Time) ID {
 	var id ID
 	// Timestamp, 4 bytes, big endian
 	binary.BigEndian.PutUint32(id[:], uint32(t.Unix()))
-	// Machine, first 3 bytes of md5(hostname)
+	// Machine ID, 3 bytes
 	id[4] = machineID[0]
 	id[5] = machineID[1]
 	id[6] = machineID[2]
