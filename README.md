@@ -71,8 +71,8 @@ References:
 - Java port by [0xShamil](https://github.com/0xShamil/): https://github.com/0xShamil/java-xid
 - Dart port by [Peter Bwire](https://github.com/pitabwire): https://pub.dev/packages/xid
 - PostgreSQL port by [Rasmus Holm](https://github.com/crholm): https://github.com/modfin/pg-xid
-- Swift port by [Uditha Atukorala](https://github.com/uditha-atukorala): https://github.com/uditha-atukorala/swift-xid
-- C++ port by [Uditha Atukorala](https://github.com/uditha-atukorala): https://github.com/uditha-atukorala/libxid
+- Swift port by [Uditha Atukorala](https://github.com/uatuko): https://github.com/uatuko/swift-xid
+- C++ port by [Uditha Atukorala](https://github.com/uatuko): https://github.com/uatuko/libxid
 - Typescript & Javascript port by [Yiwen AI](https://github.com/yiwen-ai): https://github.com/yiwen-ai/xid-ts
 
 ## Install
