@@ -10,24 +10,30 @@ on:
 
 jobs:
   test:
-    name: Test
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [ ubuntu-latest, windows-latest, macos-13, macos-latest ]
+    name: Test - ${{ matrix.platform }}
+    runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: "1.18"
+          go-version-file: "go.mod"
           check-latest: true
-      - run: go test -race -failfast ./...
+      - run: go vet ./... && go test -race -failfast ./...
   golangci-lint:
-    name: golangci-lint
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [ ubuntu-latest, windows-latest, macos-13, macos-latest ]
+    name: golangci-lint - ${{ matrix.platform }}
+    runs-on: ${{ matrix.platform }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: "1.18"
+          go-version-file: "go.mod"
           check-latest: true
-      - uses: golangci/golangci-lint-action@v3
+      - uses: golangci/golangci-lint-action@v6
         with:
           version: latest
