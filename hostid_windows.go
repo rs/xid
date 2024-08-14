@@ -15,7 +15,7 @@ func readPlatformMachineID() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer syscall.RegCloseKey(h)
+	defer func() { _ = syscall.RegCloseKey(h) }()
 
 	const syscallRegBufLen = 74 // len(`{`) + len(`abcdefgh-1234-456789012-123345456671` * 2) + len(`}`) // 2 == bytes/UTF16
 	const uuidLen = 36
@@ -23,7 +23,13 @@ func readPlatformMachineID() (string, error) {
 	var regBuf [syscallRegBufLen]uint16
 	bufLen := uint32(syscallRegBufLen)
 	var valType uint32
-	err = syscall.RegQueryValueEx(h, syscall.StringToUTF16Ptr(`MachineGuid`), nil, &valType, (*byte)(unsafe.Pointer(&regBuf[0])), &bufLen)
+
+	ptr, err := syscall.UTF16PtrFromString(`MachineGuid`)
+	if err != nil {
+		return "", err
+	}
+
+	err = syscall.RegQueryValueEx(h, ptr, nil, &valType, (*byte)(unsafe.Pointer(&regBuf[0])), &bufLen)
 	if err != nil {
 		return "", err
 	}
