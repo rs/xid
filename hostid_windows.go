@@ -11,7 +11,13 @@ import (
 func readPlatformMachineID() (string, error) {
 	// source: https://github.com/shirou/gopsutil/blob/master/host/host_syscall.go
 	var h syscall.Handle
-	err := syscall.RegOpenKeyEx(syscall.HKEY_LOCAL_MACHINE, syscall.StringToUTF16Ptr(`SOFTWARE\Microsoft\Cryptography`), 0, syscall.KEY_READ|syscall.KEY_WOW64_64KEY, &h)
+
+	regKeyCryptoPtr, err := syscall.UTF16PtrFromString(`SOFTWARE\Microsoft\Cryptography`)
+	if err != nil {
+		return "", err
+	}
+
+	err = syscall.RegOpenKeyEx(syscall.HKEY_LOCAL_MACHINE, regKeyCryptoPtr, 0, syscall.KEY_READ|syscall.KEY_WOW64_64KEY, &h)
 	if err != nil {
 		return "", err
 	}
@@ -24,14 +30,14 @@ func readPlatformMachineID() (string, error) {
 	bufLen := uint32(syscallRegBufLen)
 	var valType uint32
 
-	ptr, err := syscall.UTF16PtrFromString(`MachineGuid`)
+	mGuidPtr, err := syscall.UTF16PtrFromString(`MachineGuid`)
 	if err != nil {
 		return "", err
 	}
 
-	err = syscall.RegQueryValueEx(h, ptr, nil, &valType, (*byte)(unsafe.Pointer(&regBuf[0])), &bufLen)
+	err = syscall.RegQueryValueEx(h, mGuidPtr, nil, &valType, (*byte)(unsafe.Pointer(&regBuf[0])), &bufLen)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error parsing ")
 	}
 
 	hostID := syscall.UTF16ToString(regBuf[:])
