@@ -66,7 +66,8 @@ References:
 - https://blog.twitter.com/2010/announcing-snowflake
 - Python port by [Graham Abbott](https://github.com/graham): https://github.com/graham/python_xid
 - Scala port by [Egor Kolotaev](https://github.com/kolotaev): https://github.com/kolotaev/ride
-- Rust port by [Jérôme Renard](https://github.com/jeromer/): https://github.com/jeromer/libxid
+- Rust port by [Kaz Yoshihara](https://github.com/kazk): https://github.com/kazk/xid-rs
+- Python wrapper around the Rust port [Aleksandr Shpak](https://github.com/shpaker): https://github.com/shpaker/epyxid
 - Ruby port by [Valar](https://github.com/valarpirai/): https://github.com/valarpirai/ruby_xid
 - Java port by [0xShamil](https://github.com/0xShamil/): https://github.com/0xShamil/java-xid
 - Dart port by [Peter Bwire](https://github.com/pitabwire): https://pub.dev/packages/xid
