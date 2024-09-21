@@ -43,12 +43,13 @@ package xid
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"crypto/rand"
+	"crypto/sha256"
 	"database/sql/driver"
 	"encoding/binary"
 	"fmt"
 	"hash/crc32"
+	"io"
 	"io/ioutil"
 	"os"
 	"sort"
@@ -85,6 +86,9 @@ var (
 
 	// dec is the decoding map for base32 encoding
 	dec [256]byte
+
+	// rander is seto to default rand.Reader
+	rander = rand.Reader
 )
 
 func init() {
@@ -119,7 +123,7 @@ func readMachineID() []byte {
 		copy(id, hw.Sum(nil))
 	} else {
 		// Fallback to rand number if machine id can't be gathered
-		if _, randErr := rand.Reader.Read(id); randErr != nil {
+		if _, randErr := rander.Read(id); randErr != nil {
 			panic(fmt.Errorf("xid: cannot get hostname nor generate a random number: %v; %v", err, randErr))
 		}
 	}
@@ -129,7 +133,7 @@ func readMachineID() []byte {
 // randInt generates a random uint32
 func randInt() uint32 {
 	b := make([]byte, 3)
-	if _, err := rand.Reader.Read(b); err != nil {
+	if _, err := rander.Read(b); err != nil {
 		panic(fmt.Errorf("xid: cannot generate random number: %v;", err))
 	}
 	return uint32(b[0])<<16 | uint32(b[1])<<8 | uint32(b[2])
@@ -387,4 +391,14 @@ func (s sorter) Swap(i, j int) {
 // It works by wrapping `[]ID` and use `sort.Sort`.
 func Sort(ids []ID) {
 	sort.Sort(sorter(ids))
+}
+
+// SetRand sets the random number generator to to an io.Reader.
+// Calling with nil sets the random number generator to the default generator.
+func SetRand(r io.Reader) {
+	if r == nil {
+		rander = rand.Reader
+		return
+	}
+	rander = r
 }
