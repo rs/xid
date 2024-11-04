@@ -2,12 +2,12 @@
 
 package xid
 
-import "io/ioutil"
+import "os"
 
 func readPlatformMachineID() (string, error) {
-	b, err := ioutil.ReadFile("/etc/machine-id")
+	b, err := os.ReadFile("/etc/machine-id")
 	if err != nil || len(b) == 0 {
-		b, err = ioutil.ReadFile("/sys/class/dmi/id/product_uuid")
+		b, err = os.ReadFile("/sys/class/dmi/id/product_uuid")
 	}
 	return string(b), err
 }
