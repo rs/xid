@@ -1,4 +1,5 @@
-// +build !darwin,!linux,!freebsd,!windows
+//go:build !darwin && !linux && !freebsd && !openbsd && !windows
+// +build !darwin,!linux,!freebsd,!openbsd,!windows
 
 package xid
 
