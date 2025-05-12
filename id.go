@@ -125,6 +125,15 @@ func readMachineID() []byte {
 	return id
 }
 
+// SetMachineID allows for the Machine ID to be set by a byte array with 3
+// bytes. It is not safe for concurrent use and should be used prior to
+// generating IDs. MachineID is traditionally automatically set and generally
+// does not need to be overwritten, except in cases where fine tune control over
+// instances generating IDs needs to be controlled.
+func SetMachineID(id [3]byte) {
+	machineID = id[:]
+}
+
 // randInt generates a random uint32
 func randInt() uint32 {
 	b := make([]byte, 3)
