@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"os"
 	"reflect"
 	"testing"
 	"testing/quick"
@@ -326,6 +327,61 @@ func TestFromStringQuickInvalidChars(t *testing.T) {
 	})
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestMachineFromEnv(t *testing.T) {
+	for name, test := range map[string]struct {
+		value       string
+		expect      int
+		shouldPanic string
+	}{
+		"basic": {
+			value:  "123",
+			expect: 123,
+		},
+		"basic large": {
+			value:  "16777214",
+			expect: 16777214,
+		},
+		"bad input nan": {
+			value:       "abcd",
+			shouldPanic: `XID_MACHINE_ID value is set to not a number`,
+		},
+		"bad input negative": {
+			value:       "-1",
+			shouldPanic: `XID_MACHINE_ID out of range for 3 bytes`,
+		},
+		"bad input large": {
+			value:       "16777216",
+			shouldPanic: `XID_MACHINE_ID out of range for 3 bytes`,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			defer func() {
+				s := recover()
+				if test.shouldPanic != "" {
+					ps, _ := s.(string)
+					if test.shouldPanic != ps {
+						t.Fatalf(`expected panic "%s" but got "%s"`, test.shouldPanic, ps)
+					}
+				} else if s != nil {
+					t.Fatalf(`unexpected panic: "%v"`, s)
+				}
+			}()
+
+			if err := os.Setenv("XID_MACHINE_ID", test.value); err != nil {
+				t.Fatal("failed to set env for test: " + err.Error())
+			}
+			b := readMachineIDFromEnv()
+			if len(b) != 3 && test.expect != 0 {
+				t.Fatalf("got no response from readMachineIDFromEnv, expected %d", test.expect)
+			}
+			got := int(b[0])<<16 | int(b[1])<<8 | int(b[2])
+			if got != test.expect {
+				t.Fatalf("expected machine id %d from env but got %d", test.expect, got)
+			}
+		})
 	}
 }
 

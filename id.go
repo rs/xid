@@ -51,6 +51,7 @@ import (
 	"hash/crc32"
 	"os"
 	"sort"
+	"strconv"
 	"sync/atomic"
 	"time"
 )
@@ -107,6 +108,11 @@ func init() {
 // value, or else the machine's hostname, or else a randomly-generated number.
 // It panics if all of these methods fail.
 func readMachineID() []byte {
+	// Allow env overrides for the machine id
+	if id := readMachineIDFromEnv(); len(id) == 3 {
+		return id
+	}
+
 	id := make([]byte, 3)
 	hid, err := readPlatformMachineID()
 	if err != nil || len(hid) == 0 {
@@ -125,13 +131,23 @@ func readMachineID() []byte {
 	return id
 }
 
-// SetMachineID allows for the Machine ID to be set by a byte array with 3
-// bytes. It is not safe for concurrent use and should be used prior to
-// generating IDs. MachineID is traditionally automatically set and generally
-// does not need to be overwritten, except in cases where fine tune control over
-// instances generating IDs needs to be controlled.
-func SetMachineID(id [3]byte) {
-	machineID = id[:]
+func readMachineIDFromEnv() []byte {
+	envMachineID := os.Getenv("XID_MACHINE_ID")
+	if envMachineID == "" {
+		return nil
+	}
+
+	num, err := strconv.Atoi(envMachineID)
+	if err != nil {
+		panic("XID_MACHINE_ID value is set to not a number")
+	}
+
+	if num < 0 || num > 0xFFFFFF {
+		panic("XID_MACHINE_ID out of range for 3 bytes")
+	}
+
+	// Encode the number into big endian.
+	return []byte{byte(num >> 16), byte(num >> 8), byte(num)}
 }
 
 // randInt generates a random uint32
