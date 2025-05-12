@@ -29,13 +29,13 @@ generator servers. xid stands in between with 12 bytes (96 bits) and a more comp
 URL-safe string representation (20 chars). No configuration or central generator server
 is required so it can be used directly in server's code.
 
-| Name        | Binary Size | String Size    | Features
-|-------------|-------------|----------------|----------------
-| [UUID]      | 16 bytes    | 36 chars       | configuration free, not sortable
-| [shortuuid] | 16 bytes    | 22 chars       | configuration free, not sortable
-| [Snowflake] | 8 bytes     | up to 20 chars | needs machine/DC configuration, needs central server, sortable
-| [MongoID]   | 12 bytes    | 24 chars       | configuration free, sortable
-| xid         | 12 bytes    | 20 chars       | configuration free, sortable
+| Name        | Binary Size | String Size    | Features                                                       |
+| ----------- | ----------- | -------------- | -------------------------------------------------------------- |
+| [UUID]      | 16 bytes    | 36 chars       | configuration free, not sortable                               |
+| [shortuuid] | 16 bytes    | 22 chars       | configuration free, not sortable                               |
+| [Snowflake] | 8 bytes     | up to 20 chars | needs machine/DC configuration, needs central server, sortable |
+| [MongoID]   | 12 bytes    | 24 chars       | configuration free, sortable                                   |
+| xid         | 12 bytes    | 20 chars       | configuration free, sortable                                   |
 
 [UUID]: https://en.wikipedia.org/wiki/Universally_unique_identifier
 [shortuuid]: https://github.com/stochastic-technologies/shortuuid
@@ -46,7 +46,7 @@ Features:
 
 - Size: 12 bytes (96 bits), smaller than UUID, larger than snowflake
 - Base32 hex encoded by default (20 chars when transported as printable string, still sortable)
-- Non configured, you don't need set a unique machine and/or data center id
+- Non configured, you don't need set a unique machine and/or data center id (configurable if needed)
 - K-ordered
 - Embedded time with 1 second precision
 - Unicity guaranteed for 16,777,216 (24 bits) unique ids per second and per host/process
@@ -58,6 +58,7 @@ Best used with [zerolog](https://github.com/rs/zerolog)'s
 Notes:
 
 - Xid is dependent on the system time, a monotonic counter and so is not cryptographically secure. If unpredictability of IDs is important, you should not use Xids. It is worth noting that most other UUID-like implementations are also not cryptographically secure. You should use libraries that rely on cryptographically secure sources (like /dev/urandom on unix, crypto/rand in golang), if you want a truly random ID generator.
+- MachineID can be set by the environmental variable `XID_MACHINE_ID` to allow fine tune control over the generation.
 
 References:
 
