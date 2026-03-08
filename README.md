@@ -76,6 +76,7 @@ References:
 - Swift port by [Uditha Atukorala](https://github.com/uatuko): https://github.com/uatuko/swift-xid
 - C++ port by [Uditha Atukorala](https://github.com/uatuko): https://github.com/uatuko/libxid
 - Typescript & Javascript port by [Yiwen AI](https://github.com/yiwen-ai): https://github.com/yiwen-ai/xid-ts
+- Typescript & Javascript port by [Thomas Le Jeune](https://github.com/thomastheyoung): https://github.com/thomastheyoung/nexid
 - Gleam port by [Alexandre Del Vecchio](https://github.com/defgenx): https://github.com/defgenx/gxid
 
 ## Install
