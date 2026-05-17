@@ -47,6 +47,7 @@ import (
 	"crypto/sha256"
 	"database/sql/driver"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"hash/crc32"
 	"os"
@@ -65,10 +66,18 @@ const (
 	encodedLen = 20 // string encoded len
 	rawLen     = 12 // binary raw len
 
+	// maxTimestamp is the largest Unix second value that fits in the 4-byte
+	// big-endian timestamp field (Mongo Object ID layout).
+	maxTimestamp = 1<<32 - 1
+
 	// encoding stores a custom version of the base32 encoding with lower case
 	// letters.
 	encoding = "0123456789abcdefghijklmnopqrstuv"
 )
+
+// ErrTimestampOutOfRange indicates t.Unix() cannot be represented in the 32-bit
+// timestamp field of an ID.
+var ErrTimestampOutOfRange = errors.New("xid: time out of range for 32-bit timestamp")
 
 var (
 	// objectIDCounter is atomically incremented when generating a new ObjectId. It's
@@ -164,11 +173,28 @@ func New() ID {
 	return NewWithTime(time.Now())
 }
 
-// NewWithTime generates a globally unique ID with the passed in time
+// NewWithTime generates a globally unique ID with the passed in time.
+// It panics if t is outside the storable 32-bit Unix second range; use [NewWithTimeE]
+// to handle the error.
 func NewWithTime(t time.Time) ID {
+	id, err := NewWithTimeE(t)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
+// NewWithTimeE is like [NewWithTime] but returns [ErrTimestampOutOfRange] when
+// t.Unix() is negative or does not fit in an unsigned 32-bit second field.
+func NewWithTimeE(t time.Time) (ID, error) {
+	secs := t.Unix()
+	if secs < 0 || secs > maxTimestamp {
+		return ID{}, fmt.Errorf("%w: %d", ErrTimestampOutOfRange, secs)
+	}
+
 	var id ID
 	// Timestamp, 4 bytes, big endian
-	binary.BigEndian.PutUint32(id[:], uint32(t.Unix()))
+	binary.BigEndian.PutUint32(id[:], uint32(secs))
 	// Machine ID, 3 bytes
 	id[4] = machineID[0]
 	id[5] = machineID[1]
@@ -181,7 +207,7 @@ func NewWithTime(t time.Time) ID {
 	id[9] = byte(i >> 16)
 	id[10] = byte(i >> 8)
 	id[11] = byte(i)
-	return id
+	return id, nil
 }
 
 // FromString reads an ID from its string representation
