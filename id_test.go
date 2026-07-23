@@ -252,6 +252,17 @@ func TestIDDriverScanByteFromDatabase(t *testing.T) {
 	}
 }
 
+func TestIDDriverScanRawBytes(t *testing.T) {
+	want := ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}
+	var got ID
+	if err := got.Scan(want.Bytes()); err != nil {
+		t.Fatal(err)
+	}
+	if got.Compare(want) != 0 {
+		t.Errorf("Scan(raw) = %v, want %v", got, want)
+	}
+}
+
 func BenchmarkNew(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {

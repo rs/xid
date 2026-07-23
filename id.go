@@ -347,6 +347,12 @@ func (id *ID) Scan(value interface{}) (err error) {
 	case string:
 		return id.UnmarshalText([]byte(val))
 	case []byte:
+		// BYTEA / binary columns yield raw 12-byte IDs; text/varchar yield
+		// the base32 encoding. Accept both so Scan matches FromBytes/FromString.
+		if len(val) == rawLen {
+			copy(id[:], val)
+			return nil
+		}
 		return id.UnmarshalText(val)
 	case nil:
 		*id = nilID
