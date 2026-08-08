@@ -550,3 +550,31 @@ func TestSort(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestNewWithTimeERange(t *testing.T) {
+	t.Run("max timestamp round trip", func(t *testing.T) {
+		nt := time.Unix(maxTimestamp, 0).UTC()
+		id, err := NewWithTimeE(nt)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got, want := id.Time().Unix(), nt.Unix(); got != want {
+			t.Fatalf("Time().Unix() = %d, want %d", got, want)
+		}
+	})
+
+	t.Run("overflow", func(t *testing.T) {
+		nt := time.Unix(maxTimestamp+1, 0).UTC()
+		_, err := NewWithTimeE(nt)
+		if !errors.Is(err, ErrTimestampOutOfRange) {
+			t.Fatalf("err = %v, want ErrTimestampOutOfRange", err)
+		}
+	})
+
+	t.Run("negative", func(t *testing.T) {
+		_, err := NewWithTimeE(time.Unix(-1, 0))
+		if !errors.Is(err, ErrTimestampOutOfRange) {
+			t.Fatalf("err = %v, want ErrTimestampOutOfRange", err)
+		}
+	})
+}
