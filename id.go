@@ -27,7 +27,7 @@
 //
 //   - Size: 12 bytes (96 bits), smaller than UUID, larger than snowflake
 //   - Base32 hex encoded by default (16 bytes storage when transported as printable string)
-//   - Non configured, you don't need set a unique machine and/or data center id
+//   - Non configured, you don't need to set a unique machine and/or data center id
 //   - K-ordered
 //   - Embedded time with 1 second precision
 //   - Unicity guaranteed for 16,777,216 (24 bits) unique ids per second and per host/process
@@ -362,12 +362,12 @@ func (id *ID) Scan(value interface{}) (err error) {
 	}
 }
 
-// IsNil Returns true if this is a "nil" ID
+// IsNil returns true if this is a "nil" ID
 func (id ID) IsNil() bool {
 	return id == nilID
 }
 
-// Alias of IsNil
+// IsZero returns true if this is a zero-value ID (alias of IsNil).
 func (id ID) IsZero() bool {
 	return id.IsNil()
 }

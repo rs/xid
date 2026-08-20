@@ -439,6 +439,39 @@ func TestID_IsNil(t *testing.T) {
 	}
 }
 
+func TestID_IsZero(t *testing.T) {
+	tests := []struct {
+		name string
+		id   ID
+		want bool
+	}{
+		{
+			name: "ID not zero",
+			id:   New(),
+			want: false,
+		},
+		{
+			name: "Zero ID",
+			id:   ID{},
+			want: true,
+		},
+		{
+			name: "NilID helper",
+			id:   NilID(),
+			want: true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			if got, want := tt.id.IsZero(), tt.want; got != want {
+				t.Errorf("IsZero() = %v, want %v", got, want)
+			}
+		})
+	}
+}
+
+
 func TestNilID(t *testing.T) {
 	got := ID{}
 	if want := NilID(); !reflect.DeepEqual(got, want) {
