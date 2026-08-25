@@ -52,6 +52,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -75,8 +76,12 @@ var (
 	// used as the counter part of an id. This id is initialized with a random value.
 	objectIDCounter = randInt()
 
-	// machineID is generated once and used in subsequent calls to the New* functions.
-	machineID = readMachineID()
+	// machineID is resolved once, lazily, on first use by getMachineID. Keeping
+	// readMachineID out of package init means merely importing xid stays cheap
+	// (on darwin readMachineID forks ioreg, which costs ~85ms) when a program
+	// pulls in xid transitively but never mints an id.
+	machineIDOnce sync.Once
+	machineID     []byte
 
 	// pid stores the current process id
 	pid = os.Getpid()
@@ -131,6 +136,15 @@ func readMachineID() []byte {
 	return id
 }
 
+// getMachineID returns the machine id, resolving it on first call and caching
+// the result for subsequent ones. It is safe for concurrent use.
+func getMachineID() []byte {
+	machineIDOnce.Do(func() {
+		machineID = readMachineID()
+	})
+	return machineID
+}
+
 func readMachineIDFromEnv() []byte {
 	envMachineID := os.Getenv("XID_MACHINE_ID")
 	if envMachineID == "" {
@@ -170,9 +184,10 @@ func NewWithTime(t time.Time) ID {
 	// Timestamp, 4 bytes, big endian
 	binary.BigEndian.PutUint32(id[:], uint32(t.Unix()))
 	// Machine ID, 3 bytes
-	id[4] = machineID[0]
-	id[5] = machineID[1]
-	id[6] = machineID[2]
+	mid := getMachineID()
+	id[4] = mid[0]
+	id[5] = mid[1]
+	id[6] = mid[2]
 	// Pid, 2 bytes, specs don't specify endianness, but we use big endian.
 	id[7] = byte(pid >> 8)
 	id[8] = byte(pid)

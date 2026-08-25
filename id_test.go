@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"reflect"
+	"sync"
 	"testing"
 	"testing/quick"
 	"time"
@@ -338,6 +339,44 @@ func TestFromStringQuickInvalidChars(t *testing.T) {
 	})
 	if err != nil {
 		t.Error(err)
+	}
+}
+
+func TestGetMachineID(t *testing.T) {
+	mid := getMachineID()
+	if len(mid) != 3 {
+		t.Fatalf("expected a 3-byte machine id, got %d bytes", len(mid))
+	}
+	// Lazy resolution caches the value, so repeated calls must be identical.
+	if again := getMachineID(); !bytes.Equal(mid, again) {
+		t.Fatalf("machine id changed between calls: %v then %v", mid, again)
+	}
+	// Generated ids must embed that same machine id.
+	if m := New().Machine(); !bytes.Equal(m, mid) {
+		t.Fatalf("id machine part %v does not match machine id %v", m, mid)
+	}
+}
+
+func TestGetMachineIDConcurrent(t *testing.T) {
+	// Minting ids from many goroutines exercises the lazy sync.Once init and
+	// must be race-free with a stable machine id across all of them.
+	const goroutines = 32
+	var wg sync.WaitGroup
+	ids := make([][]byte, goroutines)
+	for i := 0; i < goroutines; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			ids[i] = New().Machine()
+		}(i)
+	}
+	wg.Wait()
+
+	want := getMachineID()
+	for i, m := range ids {
+		if !bytes.Equal(m, want) {
+			t.Fatalf("goroutine %d got machine id %v, want %v", i, m, want)
+		}
 	}
 }
 
