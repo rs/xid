@@ -12,7 +12,7 @@ jobs:
   test:
     strategy:
       matrix:
-        platform: [ ubuntu-latest, windows-latest, macos-13, macos-latest ]
+        platform: [ ubuntu-latest, windows-latest, macos-15-intel, macos-latest ]
     name: Test - ${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
     steps:
@@ -25,7 +25,7 @@ jobs:
   golangci-lint:
     strategy:
       matrix:
-        platform: [ ubuntu-latest, windows-latest, macos-13, macos-latest ]
+        platform: [ ubuntu-latest, windows-latest, macos-15-intel, macos-latest ]
     name: golangci-lint - ${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
     steps:
