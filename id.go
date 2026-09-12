@@ -288,8 +288,8 @@ func (id *ID) UnmarshalJSON(b []byte) error {
 		*id = nilID
 		return nil
 	}
-	// Check the slice length to prevent panic on passing it to UnmarshalText()
-	if len(b) < 2 {
+	// Only JSON strings can contain an encoded ID.
+	if len(b) < 2 || b[0] != '"' || b[len(b)-1] != '"' {
 		return ErrInvalidID
 	}
 	return id.UnmarshalText(b[1 : len(b)-1])

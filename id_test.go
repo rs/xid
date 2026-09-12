@@ -510,7 +510,6 @@ func TestID_IsZero(t *testing.T) {
 	}
 }
 
-
 func TestNilID(t *testing.T) {
 	got := ID{}
 	if want := NilID(); !reflect.DeepEqual(got, want) {
@@ -620,5 +619,26 @@ func TestSort(t *testing.T) {
 	Sort(ids)
 	if got, want := ids, []ID{IDList[1], IDList[2], IDList[0]}; !reflect.DeepEqual(got, want) {
 		t.Fail()
+	}
+}
+
+func TestIDJSONRejectsNonStringValues(t *testing.T) {
+	for _, input := range []string{
+		`1111111111111111111101`,
+		`[11111111111111111110]`,
+	} {
+		t.Run(input, func(t *testing.T) {
+			if !json.Valid([]byte(input)) {
+				t.Fatal("test input must be valid JSON")
+			}
+			original := IDs[0].id
+			got := original
+			if err := json.Unmarshal([]byte(input), &got); err != ErrInvalidID {
+				t.Errorf("got error %v, want %v", err, ErrInvalidID)
+			}
+			if got != original {
+				t.Errorf("invalid JSON type changed ID: got %v, want %v", got, original)
+			}
+		})
 	}
 }
