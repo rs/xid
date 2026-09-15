@@ -178,7 +178,13 @@ func New() ID {
 	return NewWithTime(time.Now())
 }
 
-// NewWithTime generates a globally unique ID with the passed in time
+// NewWithTime generates a globally unique ID with the passed in time.
+//
+// The XID format stores the timestamp in 4 bytes, so it can only represent
+// times whose Unix seconds fit in a uint32. Times before 1970-01-01 or
+// after 2106-02-07 06:28:15 UTC silently wrap when encoded; callers
+// generating IDs from arbitrary user-supplied times should clamp or
+// reject those values themselves.
 func NewWithTime(t time.Time) ID {
 	var id ID
 	// Timestamp, 4 bytes, big endian
