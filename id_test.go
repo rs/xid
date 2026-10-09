@@ -642,3 +642,67 @@ func TestIDJSONRejectsNonStringValues(t *testing.T) {
 		})
 	}
 }
+
+func TestNewWithTime_TimestampBounds(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    time.Time
+		wantSecs int64
+	}{
+		{
+			name:     "unix epoch zero",
+			input:    time.Unix(0, 0),
+			wantSecs: 0,
+		},
+		{
+			name:     "max uint32 timestamp",
+			input:    time.Unix(maxTimestamp, 0),
+			wantSecs: maxTimestamp,
+		},
+		{
+			name:     "negative timestamp clamped to zero",
+			input:    time.Unix(-1, 0),
+			wantSecs: 0,
+		},
+		{
+			name:     "deep negative timestamp clamped to zero",
+			input:    time.Unix(-1000000, 0),
+			wantSecs: 0,
+		},
+		{
+			name:     "zero time clamped to zero",
+			input:    time.Time{},
+			wantSecs: 0,
+		},
+		{
+			name:     "max uint32 plus one clamped to maxTimestamp",
+			input:    time.Unix(maxTimestamp+1, 0),
+			wantSecs: maxTimestamp,
+		},
+		{
+			name:     "issue 107 timestamp clamped to maxTimestamp",
+			input:    time.Unix(4294967296, 0),
+			wantSecs: maxTimestamp,
+		},
+		{
+			name:     "distant future timestamp clamped to maxTimestamp",
+			input:    time.Unix(1<<40, 0),
+			wantSecs: maxTimestamp,
+		},
+		{
+			name:     "valid timestamp within range preserved",
+			input:    time.Unix(1600000000, 0),
+			wantSecs: 1600000000,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			id := NewWithTime(tt.input)
+			if got := id.Time().Unix(); got != tt.wantSecs {
+				t.Fatalf("id.Time().Unix() = %d, want %d", got, tt.wantSecs)
+			}
+		})
+	}
+}

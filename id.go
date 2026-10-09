@@ -66,6 +66,9 @@ const (
 	encodedLen = 20 // string encoded len
 	rawLen     = 12 // binary raw len
 
+	// maxTimestamp is the maximum Unix timestamp that fits in an unsigned 32-bit integer.
+	maxTimestamp = 1<<32 - 1
+
 	// encoding stores a custom version of the base32 encoding with lower case
 	// letters.
 	encoding = "0123456789abcdefghijklmnopqrstuv"
@@ -178,11 +181,19 @@ func New() ID {
 	return NewWithTime(time.Now())
 }
 
-// NewWithTime generates a globally unique ID with the passed in time
+// NewWithTime generates a globally unique ID with the passed in time.
+// Clamps timestamps before the Unix epoch or after maxTimestamp (2106-02-07 06:28:15 UTC)
+// to prevent uint32 wrap-around.
 func NewWithTime(t time.Time) ID {
 	var id ID
+	secs := t.Unix()
+	if secs < 0 {
+		secs = 0
+	} else if secs > maxTimestamp {
+		secs = maxTimestamp
+	}
 	// Timestamp, 4 bytes, big endian
-	binary.BigEndian.PutUint32(id[:], uint32(t.Unix()))
+	binary.BigEndian.PutUint32(id[:], uint32(secs))
 	// Machine ID, 3 bytes
 	mid := getMachineID()
 	id[4] = mid[0]
