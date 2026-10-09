@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"reflect"
+	"strings"
 	"sync"
 	"testing"
 	"testing/quick"
@@ -126,11 +127,30 @@ func TestIDString(t *testing.T) {
 	}
 }
 
+func TestIDUpperString(t *testing.T) {
+	id := ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}
+	if got, want := id.UpperString(), "9M4E2MR0UI3E8A215N4G"; got != want {
+		t.Errorf("UpperString() = %v, want %v", got, want)
+	}
+	newID := New()
+	if got, want := newID.UpperString(), strings.ToUpper(newID.String()); got != want {
+		t.Errorf("UpperString() = %v, want %v", got, want)
+	}
+}
+
 func TestIDEncode(t *testing.T) {
 	id := ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}
 	text := make([]byte, encodedLen)
 	if got, want := string(id.Encode(text)), "9m4e2mr0ui3e8a215n4g"; got != want {
 		t.Errorf("Encode() = %v, want %v", got, want)
+	}
+}
+
+func TestIDEncodeUpper(t *testing.T) {
+	id := ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}
+	text := make([]byte, encodedLen)
+	if got, want := string(id.EncodeUpper(text)), "9M4E2MR0UI3E8A215N4G"; got != want {
+		t.Errorf("EncodeUpper() = %v, want %v", got, want)
 	}
 }
 
@@ -142,6 +162,28 @@ func TestFromString(t *testing.T) {
 	want := ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}
 	if got != want {
 		t.Errorf("FromString() = %v, want %v", got, want)
+	}
+}
+
+func TestFromStringUpper(t *testing.T) {
+	got, err := FromString("9M4E2MR0UI3E8A215N4G")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}
+	if got != want {
+		t.Errorf("FromString(upper) = %v, want %v", got, want)
+	}
+}
+
+func TestFromStringMixed(t *testing.T) {
+	got, err := FromString("9M4e2mR0uI3e8A215N4g")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}
+	if got != want {
+		t.Errorf("FromString(mixed) = %v, want %v", got, want)
 	}
 }
 
@@ -174,22 +216,26 @@ func TestIDJSONMarshaling(t *testing.T) {
 }
 
 func TestIDJSONUnmarshaling(t *testing.T) {
-	data := []byte(`{"ID":"9m4e2mr0ui3e8a215n4g","Str":"test"}`)
-	v := jsonType{}
-	err := json.Unmarshal(data, &v)
-	if err != nil {
-		t.Fatal(err)
-	}
 	want := ID{0x4d, 0x88, 0xe1, 0x5b, 0x60, 0xf4, 0x86, 0xe4, 0x28, 0x41, 0x2d, 0xc9}
-	if got := *v.ID; got.Compare(want) != 0 {
-		t.Errorf("json.Unmarshal() = %v, want %v", got, want)
+	for _, payload := range []string{
+		`{"ID":"9m4e2mr0ui3e8a215n4g","Str":"test"}`,
+		`{"ID":"9M4E2MR0UI3E8A215N4G","Str":"test"}`,
+		`{"ID":"9m4E2Mr0Ui3e8A215n4G","Str":"test"}`,
+	} {
+		v := jsonType{}
+		err := json.Unmarshal([]byte(payload), &v)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := *v.ID; got.Compare(want) != 0 {
+			t.Errorf("json.Unmarshal(%s) = %v, want %v", payload, got, want)
+		}
 	}
-
 }
 
 func TestIDJSONUnmarshalingError(t *testing.T) {
 	v := jsonType{}
-	err := json.Unmarshal([]byte(`{"ID":"9M4E2MR0UI3E8A215N4G"}`), &v)
+	err := json.Unmarshal([]byte(`{"ID":"9W4E2MR0UI3E8A215N4G"}`), &v)
 	if err != ErrInvalidID {
 		t.Errorf("json.Unmarshal() err=%v, want %v", err, ErrInvalidID)
 	}
@@ -280,10 +326,46 @@ func BenchmarkNewString(b *testing.B) {
 	})
 }
 
+func BenchmarkNewUpperString(b *testing.B) {
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_ = New().UpperString()
+		}
+	})
+}
+
+func BenchmarkEncode(b *testing.B) {
+	id := New()
+	b.RunParallel(func(pb *testing.PB) {
+		var text [encodedLen]byte
+		for pb.Next() {
+			_ = id.Encode(text[:])
+		}
+	})
+}
+
+func BenchmarkEncodeUpper(b *testing.B) {
+	id := New()
+	b.RunParallel(func(pb *testing.PB) {
+		var text [encodedLen]byte
+		for pb.Next() {
+			_ = id.EncodeUpper(text[:])
+		}
+	})
+}
+
 func BenchmarkFromString(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			_, _ = FromString("9m4e2mr0ui3e8a215n4g")
+		}
+	})
+}
+
+func BenchmarkFromStringUpper(b *testing.B) {
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			_, _ = FromString("9M4E2MR0UI3E8A215N4G")
 		}
 	})
 }
@@ -322,7 +404,7 @@ func TestFromStringQuickInvalidChars(t *testing.T) {
 			s2 := []byte(s1)
 			s2[i] = c
 			id2, err := FromString(string(s2))
-			if id1 == id2 && err == nil && c != s1[i] {
+			if id1 == id2 && err == nil && dec[c] != dec[s1[i]] {
 				t.Logf("comparing XIDs:\na: %q\nb: %q (index %d changed to %c)", s1, s2, i, c)
 				return false
 			}
@@ -336,6 +418,48 @@ func TestFromStringQuickInvalidChars(t *testing.T) {
 			args[1] = reflect.ValueOf(byte(i))
 		},
 		MaxCount: 2000,
+	})
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestFromStringCaseInsensitiveQuick(t *testing.T) {
+	f := func(id1 ID) bool {
+		s1 := id1.String()
+		sUpper := strings.ToUpper(s1)
+		idUpper, err := FromString(sUpper)
+		if err != nil || idUpper != id1 {
+			t.Logf("uppercase failed: string=%q upper=%q err=%v", s1, sUpper, err)
+			return false
+		}
+		if id1.UpperString() != sUpper {
+			t.Logf("UpperString mismatch: got %q want %q", id1.UpperString(), sUpper)
+			return false
+		}
+		var dst [encodedLen]byte
+		if string(id1.EncodeUpper(dst[:])) != sUpper {
+			t.Logf("EncodeUpper mismatch: got %q want %q", string(dst[:]), sUpper)
+			return false
+		}
+		chars := []byte(s1)
+		for j := range chars {
+			if rand.Intn(2) == 0 {
+				chars[j] = byte(strings.ToUpper(string(chars[j]))[0])
+			}
+		}
+		idMixed, err := FromString(string(chars))
+		if err != nil || idMixed != id1 {
+			t.Logf("mixed case failed: string=%q mixed=%q err=%v", s1, string(chars), err)
+			return false
+		}
+		return true
+	}
+	err := quick.Check(f, &quick.Config{
+		Values: func(args []reflect.Value, r *rand.Rand) {
+			args[0] = reflect.ValueOf(New())
+		},
+		MaxCount: 1000,
 	})
 	if err != nil {
 		t.Error(err)

@@ -16,8 +16,8 @@
 // Xid doesn't use base64 because case sensitivity and the 2 non alphanum chars may be an
 // issue when transported as a string between various systems. Base36 wasn't retained either
 // because 1/ it's not standard 2/ the resulting size is not predictable (not bit aligned)
-// and 3/ it would not remain sortable. To validate a base32 `xid`, expect a 20 chars long,
-// all lowercase sequence of `a` to `v` letters and `0` to `9` numbers (`[0-9a-v]{20}`).
+// and 3/ it would not remain sortable. To validate a base32 `xid`, expect a 20 chars long
+// sequence of `a` to `v` letters and `0` to `9` numbers (`[0-9a-v]{20}`, case-insensitive).
 //
 // UUID is 16 bytes (128 bits), snowflake is 8 bytes (64 bits), xid stands in between
 // with 12 bytes with a more compact string representation ready for the web and no
@@ -69,6 +69,10 @@ const (
 	// encoding stores a custom version of the base32 encoding with lower case
 	// letters.
 	encoding = "0123456789abcdefghijklmnopqrstuv"
+
+	// encodingUpper stores a custom version of the base32 encoding with uppercase
+	// letters.
+	encodingUpper = "0123456789ABCDEFGHIJKLMNOPQRSTUV"
 )
 
 var (
@@ -98,6 +102,9 @@ func init() {
 	}
 	for i := 0; i < len(encoding); i++ {
 		dec[encoding[i]] = byte(i)
+	}
+	for i := 0; i < len(encodingUpper); i++ {
+		dec[encodingUpper[i]] = byte(i)
 	}
 
 	// If /proc/self/cpuset exists and is not /, we can assume that we are in a
@@ -213,9 +220,22 @@ func (id ID) String() string {
 	return string(text)
 }
 
+// UpperString returns a base32 hex uppercased with no padding representation of the id (char set is 0-9, A-V).
+func (id ID) UpperString() string {
+	text := make([]byte, encodedLen)
+	encodeUpper(text, id[:])
+	return string(text)
+}
+
 // Encode encodes the id using base32 encoding, writing 20 bytes to dst and return it.
 func (id ID) Encode(dst []byte) []byte {
 	encode(dst, id[:])
+	return dst
+}
+
+// EncodeUpper encodes the id using uppercase base32 encoding, writing 20 bytes to dst and return it.
+func (id ID) EncodeUpper(dst []byte) []byte {
+	encodeUpper(dst, id[:])
 	return dst
 }
 
@@ -264,6 +284,33 @@ func encode(dst, id []byte) {
 	dst[0] = encoding[id[0]>>3]
 }
 
+// encodeUpper by unrolling the stdlib base32 algorithm + removing all safe checks
+func encodeUpper(dst, id []byte) {
+	_ = dst[19]
+	_ = id[11]
+
+	dst[19] = encodingUpper[(id[11]<<4)&0x1F]
+	dst[18] = encodingUpper[(id[11]>>1)&0x1F]
+	dst[17] = encodingUpper[(id[11]>>6)|(id[10]<<2)&0x1F]
+	dst[16] = encodingUpper[id[10]>>3]
+	dst[15] = encodingUpper[id[9]&0x1F]
+	dst[14] = encodingUpper[(id[9]>>5)|(id[8]<<3)&0x1F]
+	dst[13] = encodingUpper[(id[8]>>2)&0x1F]
+	dst[12] = encodingUpper[id[8]>>7|(id[7]<<1)&0x1F]
+	dst[11] = encodingUpper[(id[7]>>4)|(id[6]<<4)&0x1F]
+	dst[10] = encodingUpper[(id[6]>>1)&0x1F]
+	dst[9] = encodingUpper[(id[6]>>6)|(id[5]<<2)&0x1F]
+	dst[8] = encodingUpper[id[5]>>3]
+	dst[7] = encodingUpper[id[4]&0x1F]
+	dst[6] = encodingUpper[id[4]>>5|(id[3]<<3)&0x1F]
+	dst[5] = encodingUpper[(id[3]>>2)&0x1F]
+	dst[4] = encodingUpper[id[3]>>7|(id[2]<<1)&0x1F]
+	dst[3] = encodingUpper[(id[2]>>4)|(id[1]<<4)&0x1F]
+	dst[2] = encodingUpper[(id[1]>>1)&0x1F]
+	dst[1] = encodingUpper[(id[1]>>6)|(id[0]<<2)&0x1F]
+	dst[0] = encodingUpper[id[0]>>3]
+}
+
 // UnmarshalText implements encoding/text TextUnmarshaler interface
 func (id *ID) UnmarshalText(text []byte) error {
 	if len(text) != encodedLen {
@@ -302,7 +349,7 @@ func decode(id *ID, src []byte) bool {
 
 	id[11] = dec[src[17]]<<6 | dec[src[18]]<<1 | dec[src[19]]>>4
 	// check the last byte
-	if encoding[(id[11]<<4)&0x1F] != src[19] {
+	if dec[src[19]] != (id[11]<<4)&0x1F {
 		return false
 	}
 	id[10] = dec[src[16]]<<3 | dec[src[17]]>>2
