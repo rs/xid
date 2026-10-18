@@ -47,6 +47,7 @@ import (
 	"crypto/sha256"
 	"database/sql/driver"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"hash/crc32"
 	"os"
@@ -291,6 +292,13 @@ func (id *ID) UnmarshalJSON(b []byte) error {
 	// Only JSON strings can contain an encoded ID.
 	if len(b) < 2 || b[0] != '"' || b[len(b)-1] != '"' {
 		return ErrInvalidID
+	}
+	if bytes.IndexByte(b, '\\') >= 0 {
+		var decoded string
+		if err := json.Unmarshal(b, &decoded); err != nil {
+			return ErrInvalidID
+		}
+		return id.UnmarshalText([]byte(decoded))
 	}
 	return id.UnmarshalText(b[1 : len(b)-1])
 }

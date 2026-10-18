@@ -187,6 +187,21 @@ func TestIDJSONUnmarshaling(t *testing.T) {
 
 }
 
+func TestIDJSONEscapedStrings(t *testing.T) {
+	want, err := FromString("9m4e2mr0ui3e8a215n4g")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, data := range []string{`"\u0039m4e2mr0ui3e8a215n4g"`, `"9m4e2mr0ui3e8a215n4\u0067"`} {
+		var got ID
+		if err := json.Unmarshal([]byte(data), &got); err != nil {
+			t.Errorf("json.Unmarshal(%s): %v", data, err)
+		} else if got != want {
+			t.Errorf("json.Unmarshal(%s) = %v, want %v", data, got, want)
+		}
+	}
+}
+
 func TestIDJSONUnmarshalingError(t *testing.T) {
 	v := jsonType{}
 	err := json.Unmarshal([]byte(`{"ID":"9M4E2MR0UI3E8A215N4G"}`), &v)
