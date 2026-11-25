@@ -83,8 +83,8 @@ var (
 	machineIDOnce sync.Once
 	machineID     []byte
 
-	// pid stores the current process id
-	pid = os.Getpid()
+	// pid stores the current process id, mixed with container identity when available
+	pid = pidWithContainerID("/proc/self/cpuset", "/proc/self/cgroup")
 
 	nilID ID
 
@@ -100,13 +100,22 @@ func init() {
 		dec[encoding[i]] = byte(i)
 	}
 
-	// If /proc/self/cpuset exists and is not /, we can assume that we are in a
-	// form of container and use the content of cpuset xor-ed with the PID in
-	// order get a reasonable machine global unique PID.
-	b, err := os.ReadFile("/proc/self/cpuset")
+}
+
+// pidWithContainerID returns the process id mixed with a checksum of the
+// container identity. cpuset is preferred for compatibility with existing
+// deployments, with cgroup as a fallback for containers where cpuset is not
+// present.
+func pidWithContainerID(cpusetPath, cgroupPath string) int {
+	pid := os.Getpid()
+	b, err := os.ReadFile(cpusetPath)
+	if err != nil || len(b) <= 1 {
+		b, err = os.ReadFile(cgroupPath)
+	}
 	if err == nil && len(b) > 1 {
 		pid ^= int(crc32.ChecksumIEEE(b))
 	}
+	return pid
 }
 
 // readMachineID generates a machine ID, derived from a platform-specific machine ID
